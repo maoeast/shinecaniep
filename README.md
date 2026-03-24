@@ -11,16 +11,27 @@ shinecaniep/
 ├── shortcut_creator_gui.py # 快捷方式创建工具 - GUI版
 ├── shortcut-config.json    # 快捷方式配置文件
 ├── requirements.txt        # Python依赖
+├── dist/                   # 构建输出目录
 ├── src/                    # 静态资源目录
 │   ├── css/               # 样式文件（Tailwind CSS、Font Awesome）
+│   ├── js/                # JavaScript 文件
+│   │   └── tauri-api.js   # Tauri API 调用模块
 │   ├── webfonts/          # 字体文件
-│   ├── icon.ico           # 应用图标
-│   └── MKlnk.vbs          # Windows快捷方式创建脚本
+│   └── icon.ico           # 应用图标
 ├── src-tauri/              # Tauri 桌面应用配置
 │   ├── Cargo.toml         # Rust 依赖配置
 │   ├── tauri.conf.json    # Tauri 应用配置
-│   ├── src/main.rs        # 后端入口
-│   └── icons/             # 应用图标
+│   ├── src/               # Rust 源代码
+│   │   └── main.rs        # 后端入口（包含自定义命令）
+│   ├── icons/             # 应用图标
+│   │   ├── 32x32.png
+│   │   ├── 128x128.png
+│   │   ├── 128x128@2x.png
+│   │   ├── 256x256.png    # 新增
+│   │   ├── icon.icns      # macOS 图标（新增）
+│   │   ├── icon.ico       # Windows 图标
+│   │   └── generate_icons.py  # 图标生成脚本（新增）
+│   └── target/            # Rust 构建输出
 └── README.md               # 项目说明文档
 ```
 
@@ -171,6 +182,14 @@ python shortcut_creator.py
 - Tauri v2 - Rust 驱动的桌面应用框架
 - WebView2 / WKWebView / WebKitGTK - 系统级浏览器引擎
 
+#### Tauri 后端功能
+- **配置管理**: 读取/写入应用配置到本地存储
+- **文件对话框**: 原生文件选择/保存对话框
+- **快捷方式创建**: 跨平台桌面快捷方式生成
+- **系统信息**: 获取操作系统信息
+- **文件操作**: 读写文件、检查文件存在
+- **命令执行**: 执行外部程序
+
 ## 平台特定说明
 
 ### Windows
@@ -245,14 +264,28 @@ cargo tauri build
 ```
 构建产物位于 `src-tauri/target/release/bundle/`。
 
+### Windows 快速运行
+```bash
+# 运行发布版本
+.\运行Tauri应用.bat
+
+# 或直接运行可执行文件
+.\src-tauri\target\release\shinecaniep.exe
+```
+
 ---
 
 ## 更新日志
 
-### 2024-03
-- 初始版本发布
-- 支持 Windows/macOS/Linux 三平台
-- 提供 GUI 和命令行两种操作方式
+### 2025-03-24
+- **Tauri 后端功能完善**：
+  - 添加 10+ 个自定义命令（配置读写、文件对话框、系统信息、快捷方式创建等）
+  - 跨平台快捷方式创建 API（Windows .lnk / macOS .app / Linux .desktop）
+  - 原生文件对话框集成到设置面板
+  - 前端 Tauri API 模块 (`src/js/tauri-api.js`)
+- **图标生成**：添加 `generate_icons.py` 脚本，自动生成 macOS icns 图标
+- **网络检查优化**：修复 Tauri 环境下的网络状态检测
+- **项目结构优化**：添加 `dist/` 目录用于构建
 
 ### 2025-03-19
 - **平板适配优化**：添加针对 768px-1024px 平板设备的媒体查询，优化横竖屏显示
@@ -261,3 +294,8 @@ cargo tauri build
 - **管理员验证**：设置按钮改为隐藏，需连续点击右上角热区 3 次并输入密码 (299451) 才能访问
 - **Tauri 桌面应用**：配置 Tauri v2 框架，支持构建 Windows/macOS/Linux 原生桌面应用
 - **安全优化**：检测 file:// 协议，避免本地文件模式下的安全警告
+
+### 2024-03
+- 初始版本发布
+- 支持 Windows/macOS/Linux 三平台
+- 提供 GUI 和命令行两种操作方式

@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "identifier": "com.shinecaniep.app",
   "build": {
-    "frontendDist": "../",
-    "devUrl": "http://localhost:1420"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "python -m http.server 1420 --directory ./dist"
   },
   "app": {
     "windows": [
@@ -20,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http:; img-src 'self' data: blob: https: http:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data:; connect-src 'self' https: http: ws: wss:;"
+      "csp": null
     }
   },
   "plugins": {
