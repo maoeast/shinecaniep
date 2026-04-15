@@ -2669,7 +2669,114 @@
 </div>
 </div>
 
+    <!-- 主应用 iframe 容器 -->
+    <div id="appContainer" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background: #f5f7fa;">
+        <iframe id="appFrame" name="appFrame" style="width: 100%; height: 100%; border: none;" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads allow-top-navigation"></iframe>
+        <!-- 重试提示遮罩 -->
+        <div id="retryOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(245,247,250,0.95); z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="text-align: center;">
+                <div style="font-size: 48px; color: #00bcd4; margin-bottom: 16px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p style="font-size: 18px; color: #333; margin-bottom: 8px;" id="retryMessage">页面加载失败</p>
+                <p style="font-size: 14px; color: #999; margin-bottom: 24px;" id="retrySubMessage">正在尝试重新加载...</p>
+                <button id="retryButton" style="display: none; padding: 10px 32px; background: #00bcd4; color: #fff; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;" onclick="iframeRetry.retry()">重新加载</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // F12 打开 DevTools（Tauri 环境）
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' && window.__TAURI__) {
+                e.preventDefault();
+                window.__TAURI__.core.invoke('toggle_devtools');
+            }
+        });
+
+        // iframe 加载失败自动重试机制
+        var iframeRetry = (function() {
+            var MAX_RETRIES = 5;
+            var CHECK_INTERVAL = 5000;
+            var RETRY_DELAY = 2000;
+            var MAIN_PAGE = 'https://xcpm.hzxckj308.com:8008/Hmain.jsp';
+            var retryCount = 0;
+            var iframeLoaded = false;
+            var checkTimer = null;
+            var retryTimer = null;
+
+            function getIframe() { return document.getElementById('appFrame'); }
+
+            function hideOverlay() {
+                var overlay = document.getElementById('retryOverlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+
+            function onIframeLoad() {
+                console.log('[Retry] iframe loaded');
+                iframeLoaded = true;
+                clearTimeout(checkTimer);
+                clearTimeout(retryTimer);
+                hideOverlay();
+                showLoading(false);
+            }
+
+            function doRetry() {
+                if (retryCount >= MAX_RETRIES) {
+                    showOverlayMsg('页面加载失败，已重试 ' + MAX_RETRIES + ' 次', '可能是服务器异常，点击重试', true);
+                    return;
+                }
+
+                retryCount++;
+                console.log('[Retry] 第 ' + retryCount + ' 次重试加载主页...');
+                showOverlayMsg('正在重新加载...', '第 ' + retryCount + '/' + MAX_RETRIES + ' 次尝试', false);
+
+                setTimeout(function() {
+                    var iframe = getIframe();
+                    if (!iframe) return;
+                    iframe.src = MAIN_PAGE + '?_t=' + Date.now();
+                    startLoadCheck();
+                }, RETRY_DELAY);
+            }
+
+            function startLoadCheck() {
+                clearTimeout(retryTimer);
+                retryTimer = setTimeout(function() {
+                    if (!iframeLoaded) {
+                        doRetry();
+                    }
+                }, CHECK_INTERVAL);
+            }
+
+            function startMonitoring() {
+                retryCount = 0;
+                iframeLoaded = false;
+                clearTimeout(checkTimer);
+                clearTimeout(retryTimer);
+
+                var iframe = getIframe();
+                if (!iframe) return;
+
+                iframe.removeEventListener('load', onIframeLoad);
+                iframe.addEventListener('load', onIframeLoad);
+
+                checkTimer = setTimeout(function() {
+                    if (iframeLoaded) return;
+                    console.log('[Retry] 主页未加载成功，开始重试');
+                    doRetry();
+                }, CHECK_INTERVAL);
+            }
+
+            return {
+                startMonitoring: startMonitoring,
+                retry: function() {
+                    retryCount = 0;
+                    iframeLoaded = false;
+                    doRetry();
+                }
+            };
+        })();
+
         // 生成星空粒子
         function createStars() {
             const container = document.getElementById('starsContainer');
@@ -2919,8 +3026,9 @@
             
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
-                    if (!checkpassForm()) {
-                        e.preventDefault();
+                    e.preventDefault(); // 始终阻止默认提交，改用 fetch
+                    if (checkpassForm()) {
+                        doLogin();
                     }
                 });
             }
@@ -2938,8 +3046,8 @@
             if (passwordInput) {
                 passwordInput.addEventListener('keyup', function(e) {
                     if (e.key === 'Enter') {
-                        if (checkpassForm() && loginForm) {
-                            loginForm.submit();
+                        if (checkpassForm()) {
+                            doLogin();
                         }
                     }
                 });
@@ -3005,29 +3113,82 @@
             var input_username = document.getElementById('username');
             var input_pwd = document.getElementById('password');
             var errorMessage = document.getElementById('errorMessage');
-            
+
             errorMessage.classList.remove('show');
-            
+
             if (input_username.value.trim() === "") {
                 errorMessage.textContent = "用户名不能为空！";
                 errorMessage.classList.add('show');
                 input_username.focus();
                 return false;
             }
-            
+
             if (input_pwd.value === "") {
                 errorMessage.textContent = "密码不能为空！";
                 errorMessage.classList.add('show');
                 input_pwd.focus();
                 return false;
             }
-            
-            var md5_pwd = document.getElementById('md5_pwd');
-            md5_pwd.value = stringToHex(input_pwd.value);
-            
-            showLoading(true);
-            
+
             return true;
+        }
+
+        // 使用 fetch POST 登录，然后导航 iframe 到主页
+        function doLogin() {
+            var username = document.getElementById('username').value.trim();
+            var password = document.getElementById('password').value;
+
+            showLoading(true);
+
+            var params = new URLSearchParams();
+            params.append('txtusername', username);
+            params.append('txtpassword', password);
+            params.append('pwd', stringToHex(password).join(','));
+            params.append('remember', 'true');
+
+            console.log('[Login] 发送登录请求...');
+            showOverlayMsg('正在登录...', '请稍候', false);
+
+            fetch('https://xcpm.hzxckj308.com:8008/users.html?action=login', {
+                method: 'POST',
+                body: params,
+                credentials: 'include',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .then(function() {
+                console.log('[Login] 登录请求已发送，等待后加载主页...');
+                // 即使响应不完整，session cookie 可能已经设置
+                // 等待 2 秒后导航到主页
+                setTimeout(function() {
+                    showIframeAndLoad('https://xcpm.hzxckj308.com:8008/Hmain.jsp');
+                }, 2000);
+            })
+            .catch(function(err) {
+                console.log('[Login] 登录请求失败:', err);
+                // 即使 fetch 报错，仍然尝试加载主页（cookie 可能已设置）
+                setTimeout(function() {
+                    showIframeAndLoad('https://xcpm.hzxckj308.com:8008/Hmain.jsp');
+                }, 2000);
+            });
+        }
+
+        function showIframeAndLoad(url) {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('animationContainer').style.display = 'none';
+            document.getElementById('topLeftLogo').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            document.getElementById('appFrame').src = url;
+            iframeRetry.startMonitoring();
+        }
+
+        function showOverlayMsg(msg, subMsg, showBtn) {
+            var overlay = document.getElementById('retryOverlay');
+            if (!overlay) return;
+            document.getElementById('retryMessage').textContent = msg;
+            document.getElementById('retrySubMessage').textContent = subMsg;
+            document.getElementById('retryButton').style.display = showBtn ? 'inline-block' : 'none';
+            overlay.style.display = 'flex';
         }
         
         function showLoading(show) {
@@ -3783,115 +3944,159 @@
                 applyLoginStyle(this.value);
             });
 
-            // ========== Tauri 桌面应用返回按钮 ==========
-            initTauriBackButton();
+            // ========== Tauri 桌面应用导航栏 ==========
+            initTauriNavigation();
         });
 
-        // Tauri 桌面应用返回按钮初始化
-        function initTauriBackButton() {
+        // Tauri 桌面应用导航栏初始化
+        function initTauriNavigation() {
             // 检测是否在 Tauri 环境中（多种方式检测）
             const isTauri = window.__TAURI__ !== undefined ||
                             window.__TAURI_INTERNALS__ !== undefined ||
                             navigator.userAgent.includes('Tauri');
 
-            console.log('[Tauri Back Button] isTauri:', isTauri);
-            console.log('[Tauri Back Button] window.__TAURI__:', window.__TAURI__);
-            console.log('[Tauri Back Button] Current URL:', window.location.href);
+            console.log('[Tauri Nav] isTauri:', isTauri);
 
-            // 创建悬浮返回按钮（无论是否在 Tauri 中都创建，方便调试）
-            const backBtn = document.createElement('div');
-            backBtn.id = 'tauri-back-btn';
-            backBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
-            backBtn.style.cssText = `
+            // 创建悬浮导航栏容器
+            const navContainer = document.createElement('div');
+            navContainer.id = 'tauri-nav-bar';
+            navContainer.style.cssText = `
                 position: fixed;
-                top: 20px;
-                left: 20px;
-                width: 44px;
-                height: 44px;
-                background: rgba(0, 188, 212, 0.95);
-                color: white;
-                border-radius: 50%;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
+                bottom: 30px;
+                right: 30px;
+                display: flex;
+                gap: 12px;
                 z-index: 2147483647;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                padding: 10px 16px;
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(10px);
+                border-radius: 30px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                opacity: 0.4;
+                transform: scale(0.9);
                 transition: all 0.3s ease;
-                font-size: 18px;
-                border: 2px solid white;
             `;
-            backBtn.addEventListener('mouseenter', () => {
-                backBtn.style.transform = 'scale(1.1)';
-                backBtn.style.background = 'rgba(0, 188, 212, 1)';
-            });
-            backBtn.addEventListener('mouseleave', () => {
-                backBtn.style.transform = 'scale(1)';
-                backBtn.style.background = 'rgba(0, 188, 212, 0.9)';
-            });
-            backBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('[Tauri Back Button] Clicked');
-                // 使用浏览器返回
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    // 如果没有历史记录，尝试关闭窗口或跳转到主页
-                    window.location.href = '/';
-                }
-            });
-            document.body.appendChild(backBtn);
-            console.log('[Tauri Back Button] Button added to body');
 
-            // 根据实际的全屏模块 URL 特征来检测
-            const fullscreenPatterns = [
-                '/fullscreen',
-                '/module/',
-                '/full/',
-                '/assessment/',
-                '/evaluation/',
-                '/CourseTeaching/YWTeach/'  // 课程教学模块
+            // 导航按钮配置 - 使用 Tauri WebView API
+            const buttons = [
+                {
+                    id: 'nav-back',
+                    icon: 'fa-arrow-left',
+                    title: '返回',
+                    action: async () => {
+                        try {
+                            if (window.__TAURI__ && window.__TAURI__.core) {
+                                await window.__TAURI__.core.invoke('webview_go_back');
+                            }
+                        } catch (e) {
+                            console.log('[Nav] Back failed:', e);
+                        }
+                    }
+                },
+                {
+                    id: 'nav-forward',
+                    icon: 'fa-arrow-right',
+                    title: '前进',
+                    action: async () => {
+                        try {
+                            if (window.__TAURI__ && window.__TAURI__.core) {
+                                await window.__TAURI__.core.invoke('webview_go_forward');
+                            }
+                        } catch (e) {
+                            console.log('[Nav] Forward failed:', e);
+                        }
+                    }
+                },
+                {
+                    id: 'nav-refresh',
+                    icon: 'fa-sync-alt',
+                    title: '刷新',
+                    action: async () => {
+                        try {
+                            if (window.__TAURI__ && window.__TAURI__.core) {
+                                await window.__TAURI__.core.invoke('webview_reload');
+                            }
+                        } catch (e) {
+                            console.log('[Nav] Reload failed:', e);
+                        }
+                    }
+                }
             ];
 
-            function checkFullscreen() {
-                const url = window.location.href;
-                const isFullscreen = fullscreenPatterns.some(pattern => url.includes(pattern));
+            // 创建按钮
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.id = btn.id;
+                button.innerHTML = `<i class="fas ${btn.icon}"></i>`;
+                button.title = btn.title;
+                button.style.cssText = `
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    border: none;
+                    background: rgba(0, 188, 212, 0.9);
+                    color: white;
+                    font-size: 16px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                `;
 
-                console.log('[Tauri Back Button] URL:', url);
-                console.log('[Tauri Back Button] isFullscreen:', isFullscreen);
+                button.addEventListener('mouseenter', () => {
+                    button.style.transform = 'scale(1.1)';
+                    button.style.background = 'rgba(0, 188, 212, 1)';
+                });
+                button.addEventListener('mouseleave', () => {
+                    button.style.transform = 'scale(1)';
+                    button.style.background = 'rgba(0, 188, 212, 0.9)';
+                });
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`[Tauri Nav] ${btn.title} clicked`);
+                    btn.action();
+                });
 
-                // 只在 Tauri 环境中显示按钮
-                if (isTauri && isFullscreen) {
-                    backBtn.style.display = 'flex';
-                    console.log('[Tauri Back Button] Button shown');
-                } else {
-                    backBtn.style.display = 'none';
-                    console.log('[Tauri Back Button] Button hidden');
+                navContainer.appendChild(button);
+            });
+
+            // 悬停效果
+            navContainer.addEventListener('mouseenter', () => {
+                navContainer.style.opacity = '1';
+                navContainer.style.transform = 'scale(1)';
+            });
+            navContainer.addEventListener('mouseleave', () => {
+                navContainer.style.opacity = '0.4';
+                navContainer.style.transform = 'scale(0.9)';
+            });
+
+            document.body.appendChild(navContainer);
+            console.log('[Tauri Nav] Navigation bar added');
+
+            // 更新按钮状态
+            function updateNavState() {
+                const backBtn = document.getElementById('nav-back');
+                const forwardBtn = document.getElementById('nav-forward');
+
+                if (backBtn) {
+                    backBtn.style.opacity = window.history.length > 1 ? '1' : '0.4';
+                    backBtn.style.cursor = window.history.length > 1 ? 'pointer' : 'not-allowed';
                 }
             }
 
-            // 监听 URL 变化
-            window.addEventListener('popstate', checkFullscreen);
-            window.addEventListener('hashchange', checkFullscreen);
+            // 监听导航变化
+            window.addEventListener('popstate', updateNavState);
+            window.addEventListener('hashchange', updateNavState);
 
-            // 使用 MutationObserver 检测 iframe 或页面内容变化
-            const observer = new MutationObserver(() => {
-                checkFullscreen();
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
+            // 定期检查历史状态
+            setInterval(updateNavState, 500);
 
-            // 定期检查 URL（针对 iframe 内部导航）
-            let lastUrl = window.location.href;
-            setInterval(() => {
-                if (window.location.href !== lastUrl) {
-                    lastUrl = window.location.href;
-                    checkFullscreen();
-                }
-            }, 500);
-
-            // 初始检查
-            setTimeout(checkFullscreen, 1000);
+            // 初始状态
+            setTimeout(updateNavState, 100);
         }
     </script>
 </body>

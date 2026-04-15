@@ -1,26 +1,40 @@
 @echo off
-chcp 65001 >nul
+chcp 65001 >nul 2>&1 || chcp 936 >nul
+cd /d "%~dp0"
+
 echo ==========================================
-echo   资源教室管理系统-IEP (Tauri 桌面版)
+echo   Resource Room Management System - IEP
 echo ==========================================
 echo.
 
-set "TAURI_EXE=%~dp0src-tauri\target\release\shinecaniep.exe"
+echo Current directory: %cd%
+echo.
+
+set "TAURI_EXE=%cd%\src-tauri\target\release\shinecaniep.exe"
+echo Executable path: %TAURI_EXE%
+echo.
 
 if not exist "%TAURI_EXE%" (
-    echo [错误] 未找到 Tauri 可执行文件
-    echo 请先构建项目：
-    echo   cd src-tauri
-    echo   cargo build --release
+    echo [Error] Tauri executable not found at:
+    echo %TAURI_EXE%
     pause
     exit /b 1
 )
 
-echo 正在启动应用...
+echo Checking dist folder...
+if exist "dist\index.html" (
+    echo dist/index.html found
+) else (
+    echo [Warning] dist/index.html not found
+)
+echo.
+
+echo Starting application...
+echo.
 "%TAURI_EXE%"
 
 if errorlevel 1 (
     echo.
-    echo [错误] 应用启动失败
+    echo [Error] Application exited with code %errorlevel%
     pause
 )

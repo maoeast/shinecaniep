@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use tauri::Manager;
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// 应用配置结构体
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -342,6 +342,46 @@ Terminal=false
     Ok(desktop_path)
 }
 
+/// WebView 导航命令 - 后退
+#[tauri::command]
+fn webview_go_back(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.eval("window.history.back();").map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// WebView 导航命令 - 前进
+#[tauri::command]
+fn webview_go_forward(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.eval("window.history.forward();").map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// WebView 导航命令 - 刷新
+#[tauri::command]
+fn webview_reload(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.eval("window.location.reload();").map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// 打开/关闭 DevTools
+#[tauri::command]
+fn toggle_devtools(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        if window.is_devtools_open() {
+            window.close_devtools();
+        } else {
+            window.open_devtools();
+        }
+    }
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -359,6 +399,10 @@ fn main() {
             write_file,
             get_system_info,
             create_shortcut,
+            webview_go_back,
+            webview_go_forward,
+            webview_reload,
+            toggle_devtools,
         ])
         .setup(|app| {
             println!("资源教室管理系统-IEP 已启动");

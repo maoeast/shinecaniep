@@ -175,6 +175,44 @@ export const ShortcutAPI = {
 };
 
 /**
+ * WebView 导航控制
+ */
+export const WebViewAPI = {
+    /**
+     * WebView 后退
+     * @returns {Promise<void>}
+     */
+    async goBack() {
+        return await invoke('webview_go_back');
+    },
+
+    /**
+     * WebView 前进
+     * @returns {Promise<void>}
+     */
+    async goForward() {
+        return await invoke('webview_go_forward');
+    },
+
+    /**
+     * WebView 刷新
+     * @returns {Promise<void>}
+     */
+    async reload() {
+        return await invoke('webview_reload');
+    },
+
+    /**
+     * 在 WebView 中加载 URL
+     * @param {string} url - 要加载的 URL
+     * @returns {Promise<void>}
+     */
+    async loadUrl(url) {
+        return await invoke('load_url_in_webview', { url });
+    }
+};
+
+/**
  * 图像处理工具
  */
 export const ImageUtils = {
@@ -241,6 +279,7 @@ export const TauriAPI = {
     File: FileAPI,
     System: SystemAPI,
     Shortcut: ShortcutAPI,
+    WebView: WebViewAPI,
     Image: ImageUtils
 };
 
