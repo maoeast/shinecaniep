@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0-rc",
   "productName": "资源教室管理系统-IEP",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "identifier": "com.shinecaniep.app",
   "build": {
     "frontendDist": "../dist",
@@ -10,17 +10,8 @@
     "beforeDevCommand": "python -m http.server 1420 --directory ./dist"
   },
   "app": {
-    "windows": [
-      {
-        "title": "资源教室管理系统-IEP",
-        "width": 1400,
-        "height": 800,
-        "minWidth": 1024,
-        "minHeight": 768,
-        "center": true,
-        "resizable": true
-      }
-    ],
+    "windows": [],
+    "withGlobalTauri": true,
     "security": {
       "csp": null
     }
@@ -36,6 +27,7 @@
     "copyright": "",
     "targets": ["nsis"],
     "externalBin": [],
+    "resources": [],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -46,7 +38,14 @@
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
-      "timestampUrl": ""
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
+      },
+      "nsis": {
+        "languages": ["SimpChinese"],
+        "displayLanguageSelector": false
+      }
     }
   }
 }

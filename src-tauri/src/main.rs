@@ -1,77 +1,61 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
-/// 应用配置结构体
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct AppConfig {
-    pub system_name: String,
-    pub system_name_en: String,
-    pub loading_text: String,
-    pub copyright: String,
-    pub theme: String,
-    pub login_style: String,
-    pub bg_opacity: i32,
+/// 应用配置结构体（通用 JSON，不限定字段）
+pub type AppConfig = serde_json::Value;
+
+/// 获取 exe 所在目录的 config.json 路径
+fn get_config_path() -> Result<PathBuf, String> {
+    let exe_path = std::env::current_exe()
+        .map_err(|e| format!("无法获取 exe 路径: {}", e))?;
+    let exe_dir = exe_path.parent()
+        .ok_or("无法获取 exe 所在目录")?;
+    Ok(exe_dir.join("config.json"))
 }
 
-impl Default for AppConfig {
-    fn default() -> Self {
-        Self {
-            system_name: "资源教室管理系统-IEP".to_string(),
-            system_name_en: "IEP Resource Room Management System".to_string(),
-            loading_text: "系统加载中".to_string(),
-            copyright: "杭州炫灿科技有限公司".to_string(),
-            theme: "tech".to_string(),
-            login_style: "modern".to_string(),
-            bg_opacity: 30,
-        }
-    }
-}
-
-/// 获取应用配置目录
+/// 获取 exe 所在目录
 #[tauri::command]
-fn get_app_dir(app: tauri::AppHandle) -> Result<String, String> {
-    let app_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| format!("无法获取应用数据目录: {}", e))?;
-
-    // 确保目录存在
-    if !app_dir.exists() {
-        std::fs::create_dir_all(&app_dir).map_err(|e| format!("创建目录失败: {}", e))?;
-    }
-
-    Ok(app_dir.to_string_lossy().to_string())
+fn get_app_dir() -> Result<String, String> {
+    let exe_path = std::env::current_exe()
+        .map_err(|e| format!("无法获取 exe 路径: {}", e))?;
+    let exe_dir = exe_path.parent()
+        .ok_or("无法获取 exe 所在目录")?;
+    Ok(exe_dir.to_string_lossy().to_string())
 }
 
-/// 读取配置文件
+/// 获取 exe 完整路径
 #[tauri::command]
-fn read_config(app: tauri::AppHandle) -> Result<AppConfig, String> {
-    let app_dir = get_app_dir(app)?;
-    let config_path = PathBuf::from(&app_dir).join("config.json");
+fn get_exe_path() -> Result<String, String> {
+    let exe_path = std::env::current_exe()
+        .map_err(|e| format!("无法获取 exe 路径: {}", e))?;
+    Ok(exe_path.to_string_lossy().to_string())
+}
+
+/// 读取配置文件（exe 同目录下的 config.json）
+#[tauri::command]
+fn read_config() -> Result<serde_json::Value, String> {
+    let config_path = get_config_path()?;
 
     if !config_path.exists() {
-        // 返回默认配置
-        return Ok(AppConfig::default());
+        return Ok(serde_json::Value::Null);
     }
 
     let content = std::fs::read_to_string(&config_path)
         .map_err(|e| format!("读取配置文件失败: {}", e))?;
 
-    let config: AppConfig = serde_json::from_str(&content)
+    let config: serde_json::Value = serde_json::from_str(&content)
         .map_err(|e| format!("解析配置文件失败: {}", e))?;
 
     Ok(config)
 }
 
-/// 写入配置文件
+/// 写入配置文件（exe 同目录下的 config.json）
 #[tauri::command]
-fn write_config(app: tauri::AppHandle, config: AppConfig) -> Result<(), String> {
-    let app_dir = get_app_dir(app)?;
-    let config_path = PathBuf::from(&app_dir).join("config.json");
+fn write_config(config: serde_json::Value) -> Result<(), String> {
+    let config_path = get_config_path()?;
 
     let content = serde_json::to_string_pretty(&config)
         .map_err(|e| format!("序列化配置失败: {}", e))?;
@@ -160,6 +144,27 @@ fn write_file(path: String, content: String) -> Result<(), String> {
         .map_err(|e| format!("写入文件失败: {}", e))
 }
 
+/// 获取桌面路径
+#[tauri::command]
+async fn get_desktop_path() -> Result<String, String> {
+    use std::process::Command;
+
+    let output = Command::new("powershell")
+        .args(&["-Command", "[Environment]::GetFolderPath('Desktop')"])
+        .output()
+        .map_err(|e| format!("获取桌面路径失败: {}", e))?;
+
+    if !output.status.success() {
+        return Err(format!(
+            "获取桌面路径失败: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+
+    let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    Ok(path)
+}
+
 /// 获取系统信息
 #[tauri::command]
 fn get_system_info() -> serde_json::Value {
@@ -203,16 +208,19 @@ fn create_windows_shortcut(
     // 使用 PowerShell 创建快捷方式
     let shortcut_path = format!("{}\\{}.lnk", output_dir, name);
 
-    let icon_param = icon_path.map(|p| format!(", \"{}\"", p)).unwrap_or_default();
+    let icon_line = icon_path
+        .map(|p| format!(r#"$Shortcut.IconLocation = "{}""#, p))
+        .unwrap_or_default();
 
     let ps_script = format!(
         r#"
         $WshShell = New-Object -comObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut("{}")
-        $Shortcut.TargetPath = "{}"{}
+        $Shortcut.TargetPath = "{}"
+        {}
         $Shortcut.Save()
         "#,
-        shortcut_path, target, icon_param
+        shortcut_path, target, icon_line
     );
 
     let output = Command::new("powershell")
@@ -382,6 +390,56 @@ fn toggle_devtools(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// 注入到服务器页面的导航栏 JS（纯 JS，无外部依赖）
+const NAV_BAR_JS: &str = r#"
+(function() {
+    if (document.getElementById('tauri-nav-bar')) return;
+
+    var nav = document.createElement('div');
+    nav.id = 'tauri-nav-bar';
+    nav.style.cssText = 'position:fixed;bottom:30px;right:30px;display:flex;gap:12px;z-index:2147483647;padding:10px 16px;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.2);opacity:0.4;transform:scale(0.9);transition:all 0.3s ease;';
+
+    var btns = [
+        { id:'nav-back', label:'\u25C0', title:'返回', action:'window.history.back()' },
+        { id:'nav-forward', label:'\u25B6', title:'前进', action:'window.history.forward()' },
+        { id:'nav-refresh', label:'\u21BB', title:'刷新', action:'window.location.reload()' }
+    ];
+
+    btns.forEach(function(b) {
+        var btn = document.createElement('button');
+        btn.id = b.id;
+        btn.textContent = b.label;
+        btn.title = b.title;
+        btn.style.cssText = 'width:40px;height:40px;border-radius:50%;border:none;background:rgba(0,188,212,0.9);color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+        btn.onmouseenter = function() { btn.style.transform='scale(1.1)'; btn.style.background='rgba(0,188,212,1)'; };
+        btn.onmouseleave = function() { btn.style.transform='scale(1)'; btn.style.background='rgba(0,188,212,0.9)'; };
+        btn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); eval(b.action); };
+        nav.appendChild(btn);
+    });
+
+    nav.onmouseenter = function() { nav.style.opacity='1'; nav.style.transform='scale(1)'; };
+    nav.onmouseleave = function() { nav.style.opacity='0.4'; nav.style.transform='scale(0.9)'; };
+
+    document.body.appendChild(nav);
+})();
+"#;
+
+/// 注入到登录页面的 F12 DevTools 快捷键 JS
+const F12_JS: &str = r#"
+(function() {
+    if (window.__f12_injected) return;
+    window.__f12_injected = true;
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12') {
+            e.preventDefault();
+            if (window.__TAURI__ && window.__TAURI__.core) {
+                window.__TAURI__.core.invoke('toggle_devtools');
+            }
+        }
+    });
+})();
+"#;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -389,6 +447,7 @@ fn main() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             get_app_dir,
+            get_exe_path,
             read_config,
             write_config,
             select_file_dialog,
@@ -399,6 +458,7 @@ fn main() {
             write_file,
             get_system_info,
             create_shortcut,
+            get_desktop_path,
             webview_go_back,
             webview_go_forward,
             webview_reload,
@@ -419,6 +479,74 @@ fn main() {
                     println!("无法获取应用数据目录: {}", e);
                 }
             }
+
+            // 将 config.json 和 icon 文件夹复制到 exe 旁边（仅首次安装时）
+            if let Ok(exe_path) = std::env::current_exe() {
+                if let Some(exe_dir) = exe_path.parent() {
+                    // config.json
+                    let target_config = exe_dir.join("config.json");
+                    if !target_config.exists() {
+                        let config_content = include_str!("../../dist/config.json");
+                        let _ = std::fs::write(&target_config, config_content);
+                        println!("[Setup] 已复制 config.json 到 exe 目录");
+                    }
+
+                    // icon 文件夹
+                    let icon_dir = exe_dir.join("icon");
+                    if !icon_dir.exists() {
+                        let _ = std::fs::create_dir_all(&icon_dir);
+                        let icons: &[(&str, &[u8])] = &[
+                            ("AI.ico", include_bytes!("../../dist/src/icon/AI.ico")),
+                            ("app.ico", include_bytes!("../../dist/src/icon/app.ico")),
+                            ("app2.ico", include_bytes!("../../dist/src/icon/app2.ico")),
+                            ("app4.ico", include_bytes!("../../dist/src/icon/app4.ico")),
+                            ("book.ico", include_bytes!("../../dist/src/icon/book.ico")),
+                            ("icon.ico", include_bytes!("../../dist/src/icon/icon.ico")),
+                            ("math.ico", include_bytes!("../../dist/src/icon/math.ico")),
+                            ("xqkf.ico", include_bytes!("../../dist/src/icon/xqkf.ico")),
+                        ];
+                        for (name, data) in icons {
+                            let _ = std::fs::write(icon_dir.join(name), data);
+                        }
+                        println!("[Setup] 已复制 icon 文件夹到 exe 目录");
+                    }
+                }
+            }
+
+            // 程序化创建主窗口
+            let url = if cfg!(debug_assertions) {
+                WebviewUrl::External("http://localhost:1420".parse().unwrap())
+            } else {
+                WebviewUrl::App("index.html".into())
+            };
+
+            WebviewWindowBuilder::new(app, "main", url)
+                .title("ShineCanIEP")
+                .inner_size(1400.0, 800.0)
+                .min_inner_size(1024.0, 768.0)
+                .center()
+                .resizable(true)
+                .on_page_load(|window, payload| {
+                    if payload.event() == tauri::webview::PageLoadEvent::Finished {
+                        let url = payload.url();
+                        let url_str = url.as_str();
+                        println!("[PageLoad] URL: {}", url_str);
+
+                        if url_str.contains("xcpm.hzxckj308.com") {
+                            // 服务器页面：注入导航栏
+                            let _ = window.eval(NAV_BAR_JS);
+                            // 也注入 F12 支持
+                            let _ = window.eval(F12_JS);
+                            println!("[PageLoad] Injected nav bar + F12");
+                        } else if url_str.starts_with("tauri://") || url_str.starts_with("http://localhost") || url_str.starts_with("https://tauri.") || url_str.contains("index.html") || url_str.starts_with("file://") {
+                            // 登录页面：注入 F12 DevTools 支持
+                            let _ = window.eval(F12_JS);
+                            println!("[PageLoad] Injected F12 on login page");
+                        }
+                    }
+                })
+                .build()
+                .expect("failed to create main window");
 
             Ok(())
         })

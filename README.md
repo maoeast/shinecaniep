@@ -1,6 +1,6 @@
-# 资源教室管理系统 - IEP
+# 资源中心综合评价管理平台
 
-基于 Tauri v2 构建的跨平台桌面应用，用于资源教室管理。
+基于 Tauri v2 构建的跨平台桌面应用。
 
 ## 项目结构
 
@@ -72,14 +72,31 @@ shinecaniep/
 
 ### 运行开发模式
 ```bash
-cargo tauri dev
+cd src-tauri && cargo tauri dev
 ```
 
-### 构建发布版本
+### 打包发布流程
+
+**重要：** 修改 `dist/` 下的文件后，必须执行 `cargo clean` 清除缓存，否则改动不会被嵌入到打包产物中。`touch src/main.rs` 无法强制刷新 dist 文件缓存。
+
 ```bash
+# 1. 同步前端文件到 dist 目录
+cp index.html dist/index.html
+cp config.json dist/config.json
+
+# 2. 清除编译缓存（确保 dist 文件重新嵌入）
+cd src-tauri && cargo clean
+
+# 3. 打包
 cargo tauri build
 ```
-构建产物位于 `src-tauri/target/release/bundle/`。
+
+打包产物位于：
+```
+src-tauri/target/release/bundle/nsis/资源中心融合教育管理平台_1.0.0_x64-setup.exe
+```
+
+NSIS 安装包已配置为简体中文界面，设置位于 `tauri.conf.json` 的 `bundle.windows.nsis.languages` 字段。
 
 ### Windows 快速运行
 ```bash
