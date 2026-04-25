@@ -6,9 +6,10 @@
 
 ```
 shinecaniep/
-├── index.html              # 主应用页面
-├── config.json             # 应用配置文件
-├── dist/                   # 构建输出目录
+├── build.js                # 打包前置配置脚本（系统名称一键同步）
+├── dist/                   # 构建输出目录（唯一源文件目录）
+│   ├── index.html         # 主应用页面（直接在此文件上开发）
+│   └── config.json        # 应用默认配置（打包嵌入 + 首次启动复制到 exe 目录）
 ├── src/                    # 静态资源目录
 │   ├── css/               # 样式文件（Tailwind CSS、Font Awesome）
 │   ├── js/                # JavaScript 文件
@@ -77,24 +78,55 @@ cd src-tauri && cargo tauri dev
 
 ### 打包发布流程
 
-**重要：** 修改 `dist/` 下的文件后，必须执行 `cargo clean` 清除缓存，否则改动不会被嵌入到打包产物中。`touch src/main.rs` 无法强制刷新 dist 文件缓存。
+#### 第一步：配置系统名称
+
+打开项目根目录下的 `build.js`，修改 `SYSTEM_NAME` 的值，然后运行脚本，即可自动将系统名称同步到三处打包相关文件：
+
+```js
+// build.js —— 只改这一处
+const SYSTEM_NAME = '资源教室管理系统-IEP';
+```
 
 ```bash
-# 1. 同步前端文件到 dist 目录
-cp index.html dist/index.html
-cp config.json dist/config.json
+node build.js
+```
 
-# 2. 清除编译缓存（确保 dist 文件重新嵌入）
+脚本自动同步的三个文件：
+
+| 文件 | 字段 |
+|------|------|
+| `dist/config.json` | `systemName` |
+| `dist/index.html` | `<title>` |
+| `src-tauri/Cargo.toml` | `description` |
+
+> `build.js` 基于 Node.js 原生模块（`fs`、`path`），**Windows 和 Linux 均可直接运行**，无平台差异，前提是已安装 [Node.js](https://nodejs.org/)。
+
+#### 第二步：清除编译缓存
+
+**重要：** 修改 `dist/` 下的文件后，必须执行 `cargo clean` 清除缓存，否则改动不会被嵌入到打包产物中。
+
+```bash
 cd src-tauri && cargo clean
+```
 
-# 3. 打包
+#### 第三步：打包
+
+```bash
 cargo tauri build
 ```
 
 打包产物位于：
+
 ```
-src-tauri/target/release/bundle/nsis/资源中心融合教育管理平台_1.0.0_x64-setup.exe
+# Windows（NSIS 安装包）
+src-tauri/target/release/bundle/nsis/系统名称_1.0.0_x64-setup.exe
+
+# Linux
+src-tauri/target/release/bundle/deb/系统名称_1.0.0_amd64.deb
+src-tauri/target/release/bundle/appimage/系统名称_1.0.0_amd64.AppImage
 ```
+
+> Tauri 需要在**目标平台上编译**，不支持直接从 Linux 交叉编译 Windows 安装包（反之亦然）。Windows 安装包请在 Windows 机器上执行打包命令。
 
 NSIS 安装包已配置为简体中文界面，设置位于 `tauri.conf.json` 的 `bundle.windows.nsis.languages` 字段。
 
@@ -108,6 +140,10 @@ NSIS 安装包已配置为简体中文界面，设置位于 `tauri.conf.json` �
 MIT License
 
 ## 更新日志
+
+### 2026-04-25
+- 新增 `build.js` 打包前置配置脚本，系统名称一键同步到 `dist/config.json`、`dist/index.html`、`src-tauri/Cargo.toml`，支持 Windows 和 Linux
+- 清理代码中的调试日志（`console.log`），保留必要的错误日志（`console.error`）
 
 ### 2025-03-26
 - 新增右下角悬浮导航栏（返回、前进、刷新按钮）
