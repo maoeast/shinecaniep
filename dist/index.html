@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>资源中心综合评价管理平台</title>
     <link rel="stylesheet" href="src/css/tailwind.min.css">
     <link rel="stylesheet" href="src/css/all.min.css">
@@ -380,6 +383,238 @@
         .loading-text::after {
             content: '';
             animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        .game-loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .game-loader__planet {
+            --loader-size: min(78vmin, 560px);
+            --orbit-step: calc(var(--loader-size) * 0.06);
+            position: relative;
+            width: var(--loader-size);
+            height: var(--loader-size);
+            filter: url("#goo");
+        }
+
+        .game-loader__planet::after {
+            content: '';
+            position: absolute;
+            top: 46%;
+            left: 46%;
+            width: 8%;
+            height: 8%;
+            border-radius: 50%;
+            background: #11dbd9;
+            box-shadow: 0 0 24px 4px #11dbd9;
+            animation: game-loader-scale 16s linear infinite, game-loader-color5 8s linear infinite;
+        }
+
+        .game-loader__planet .loader-mini1,
+        .game-loader__planet .loader-mini2,
+        .game-loader__planet .loader-mini3,
+        .game-loader__planet .loader-mini4,
+        .game-loader__planet .loader-radius1,
+        .game-loader__planet .loader-radius2,
+        .game-loader__planet .loader-radius3,
+        .game-loader__planet .loader-radius4 {
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .game-loader__planet .loader-mini1,
+        .game-loader__planet .loader-mini2,
+        .game-loader__planet .loader-mini3,
+        .game-loader__planet .loader-mini4 {
+            top: 48.5%;
+            left: 48.5%;
+            background: #11dbd9;
+        }
+
+        .game-loader__planet .loader-mini1 {
+            width: 3%;
+            height: 3%;
+            animation: game-loader-move1 8s linear infinite, game-loader-color1 8s linear infinite;
+        }
+
+        .game-loader__planet .loader-mini2 {
+            width: 3.6%;
+            height: 3.6%;
+            animation: game-loader-move2 9s linear infinite, game-loader-color2 9s linear infinite;
+        }
+
+        .game-loader__planet .loader-mini3 {
+            width: 4.2%;
+            height: 4.2%;
+            animation: game-loader-move3 10s linear infinite, game-loader-color3 10s linear infinite;
+        }
+
+        .game-loader__planet .loader-mini4 {
+            width: 4.8%;
+            height: 4.8%;
+            animation: game-loader-move4 11s linear infinite, game-loader-color4 11s linear infinite;
+        }
+
+        .game-loader__planet .loader-radius1,
+        .game-loader__planet .loader-radius2,
+        .game-loader__planet .loader-radius3,
+        .game-loader__planet .loader-radius4 {
+            border: 1px solid rgba(17, 219, 217, 0.25);
+            transform: scale(0);
+            animation: game-loader-orbit 8s linear infinite;
+        }
+
+        .game-loader__planet .loader-radius1 {
+            top: 44%;
+            left: 44%;
+            width: 12%;
+            height: 12%;
+        }
+
+        .game-loader__planet .loader-radius2 {
+            top: 41%;
+            left: 41%;
+            width: 18%;
+            height: 18%;
+            animation-duration: 9s;
+        }
+
+        .game-loader__planet .loader-radius3 {
+            top: 38%;
+            left: 38%;
+            width: 24%;
+            height: 24%;
+            animation-duration: 10s;
+        }
+
+        .game-loader__planet .loader-radius4 {
+            top: 35%;
+            left: 35%;
+            width: 30%;
+            height: 30%;
+            animation-duration: 11s;
+        }
+
+        .game-loader svg {
+            position: absolute;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        .loading-copy {
+            position: absolute;
+            left: 50%;
+            bottom: clamp(40px, 10vh, 96px);
+            transform: translateX(-50%);
+            width: min(80vw, 320px);
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .loading-copy .loading-text {
+            font-size: clamp(14px, 1.8vw, 18px);
+            font-weight: 500;
+            letter-spacing: 0.45em;
+            color: rgba(255, 255, 255, 0.92);
+            text-shadow: 0 0 16px rgba(17, 219, 217, 0.24);
+        }
+
+        @keyframes game-loader-move1 {
+            0% { transform: skewX(5deg) rotate(0deg) translateY(0) rotate(0deg) skewX(-5deg) rotate(0deg); }
+            10% { transform: skewX(5deg) rotate(180deg) translateY(calc(var(--orbit-step) * -1)) rotate(-180deg) skewX(-5deg) rotate(180deg); }
+            25% { transform: skewX(5deg) rotate(360deg) translateY(calc(var(--orbit-step) * -2)) rotate(-360deg) skewX(-5deg) rotate(360deg); }
+            50% { transform: skewX(5deg) rotate(720deg) translateY(calc(var(--orbit-step) * -2)) rotate(720deg) skewX(-5deg) rotate(720deg); }
+            75% { transform: skewX(5deg) rotate(1080deg) translateY(calc(var(--orbit-step) * -2)) rotate(-1080deg) skewX(-5deg) rotate(1080deg); }
+            90% { transform: skewX(5deg) rotate(1260deg) translateY(calc(var(--orbit-step) * -1)) rotate(-1260deg) skewX(-5deg) rotate(1260deg); }
+            100% { transform: skewX(5deg) rotate(1440deg) translateY(0) rotate(-1440deg) skewX(-5deg) rotate(1440deg); }
+        }
+
+        @keyframes game-loader-move2 {
+            0% { transform: skewX(5deg) rotate(0deg) translateY(0) rotate(0deg) skewX(-5deg) rotate(0deg); }
+            10% { transform: skewX(5deg) rotate(180deg) translateY(calc(var(--orbit-step) * -1.5)) rotate(-180deg) skewX(-5deg) rotate(180deg); }
+            25% { transform: skewX(5deg) rotate(360deg) translateY(calc(var(--orbit-step) * -3)) rotate(-360deg) skewX(-5deg) rotate(360deg); }
+            50% { transform: skewX(5deg) rotate(720deg) translateY(calc(var(--orbit-step) * -3)) rotate(720deg) skewX(-5deg) rotate(720deg); }
+            75% { transform: skewX(5deg) rotate(1080deg) translateY(calc(var(--orbit-step) * -3)) rotate(-1080deg) skewX(-5deg) rotate(1080deg); }
+            90% { transform: skewX(5deg) rotate(1260deg) translateY(calc(var(--orbit-step) * -1.5)) rotate(-1260deg) skewX(-5deg) rotate(1260deg); }
+            100% { transform: skewX(5deg) rotate(1440deg) translateY(0) rotate(-1440deg) skewX(-5deg) rotate(1440deg); }
+        }
+
+        @keyframes game-loader-move3 {
+            0% { transform: skewX(5deg) rotate(0deg) translateY(0) rotate(0deg) skewX(-5deg) rotate(0deg); }
+            10% { transform: skewX(5deg) rotate(180deg) translateY(calc(var(--orbit-step) * -2)) rotate(-180deg) skewX(-5deg) rotate(180deg); }
+            25% { transform: skewX(5deg) rotate(360deg) translateY(calc(var(--orbit-step) * -4)) rotate(-360deg) skewX(-5deg) rotate(360deg); }
+            50% { transform: skewX(5deg) rotate(720deg) translateY(calc(var(--orbit-step) * -4)) rotate(720deg) skewX(-5deg) rotate(720deg); }
+            75% { transform: skewX(5deg) rotate(1080deg) translateY(calc(var(--orbit-step) * -4)) rotate(-1080deg) skewX(-5deg) rotate(1080deg); }
+            90% { transform: skewX(5deg) rotate(1260deg) translateY(calc(var(--orbit-step) * -2)) rotate(-1260deg) skewX(-5deg) rotate(1260deg); }
+            100% { transform: skewX(5deg) rotate(1440deg) translateY(0) rotate(-1440deg) skewX(-5deg) rotate(1440deg); }
+        }
+
+        @keyframes game-loader-move4 {
+            0% { transform: skewX(5deg) rotate(0deg) translateY(0) rotate(0deg) skewX(-5deg) rotate(0deg); }
+            10% { transform: skewX(5deg) rotate(180deg) translateY(calc(var(--orbit-step) * -2.5)) rotate(-180deg) skewX(-5deg) rotate(180deg); }
+            25% { transform: skewX(5deg) rotate(360deg) translateY(calc(var(--orbit-step) * -5)) rotate(-360deg) skewX(-5deg) rotate(360deg); }
+            50% { transform: skewX(5deg) rotate(720deg) translateY(calc(var(--orbit-step) * -5)) rotate(720deg) skewX(-5deg) rotate(720deg); }
+            75% { transform: skewX(5deg) rotate(1080deg) translateY(calc(var(--orbit-step) * -5)) rotate(-1080deg) skewX(-5deg) rotate(1080deg); }
+            90% { transform: skewX(5deg) rotate(1260deg) translateY(calc(var(--orbit-step) * -2.5)) rotate(-1260deg) skewX(-5deg) rotate(1260deg); }
+            100% { transform: skewX(5deg) rotate(1440deg) translateY(0) rotate(-1440deg) skewX(-5deg) rotate(1440deg); }
+        }
+
+        @keyframes game-loader-scale {
+            0%, 100% { transform: scale(1.5); }
+            50% { transform: scale(1); }
+        }
+
+        @keyframes game-loader-orbit {
+            0% { transform: scale(0); }
+            10% { transform: scale(1); }
+            25% { transform: scale(2.2); }
+            35% { transform: scale(2.1); }
+            50% { transform: scale(2); }
+            65% { transform: scale(2.1); }
+            75% { transform: scale(2); }
+            90% { transform: scale(1); }
+            100% { transform: scale(0); }
+        }
+
+        @keyframes game-loader-color1 {
+            10%, 90% { background: #11dbd9; }
+            50% { background: #ff217b; }
+        }
+
+        @keyframes game-loader-color2 {
+            10%, 90% { background: #11dbd9; }
+            50% { background: #ff7878; }
+        }
+
+        @keyframes game-loader-color3 {
+            10%, 90% { background: #11dbd9; }
+            50% { background: #ffa283; }
+        }
+
+        @keyframes game-loader-color4 {
+            10%, 90% { background: #11dbd9; }
+            50% { background: #962a4e; }
+        }
+
+        @keyframes game-loader-color5 {
+            10%, 90% {
+                background: #11dbd9;
+                box-shadow: 0 0 24px 4px #11dbd9;
+            }
+            50% {
+                background: #13c2d3;
+                box-shadow: 0 0 24px 4px #13c2d3;
+            }
         }
         
         @keyframes dots {
@@ -1120,6 +1355,66 @@
             max-height: 60px;
             object-fit: contain;
             border-radius: 4px;
+        }
+
+        .shortcut-icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .shortcut-icon-card {
+            border: 1px solid #d9e2e8;
+            background: #fff;
+            border-radius: 10px;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .shortcut-icon-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .shortcut-icon-card.active {
+            border-color: var(--color-primary);
+            background: linear-gradient(135deg, rgba(0, 188, 212, 0.08), rgba(38, 198, 218, 0.12));
+            box-shadow: 0 6px 14px rgba(0, 188, 212, 0.18);
+        }
+
+        .shortcut-icon-thumb {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .shortcut-icon-toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .shortcut-icon-empty {
+            grid-column: 1 / -1;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f5f7f9;
+            color: #999;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            .shortcut-icon-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
         
         .left-panel-bg {
@@ -2335,44 +2630,30 @@
         <img id="topLeftLogoImg" src="" alt="Logo">
     </div>
     <div class="animation-container" id="animationContainer">
-        <!-- 粒子连线 Canvas -->
-        <canvas id="particle-canvas"></canvas>
-
-        <!-- 网格背景 -->
-        <div class="grid-overlay"></div>
-
-        <!-- 流光线条 -->
-        <div class="light-streams">
-            <div class="light-stream"></div>
-            <div class="light-stream"></div>
-            <div class="light-stream"></div>
-            <div class="light-stream"></div>
-            <div class="light-stream"></div>
-            <div class="light-stream"></div>
-            <div class="light-stream"></div>
-        </div>
-
-        <!-- 浮动光点 -->
-        <div class="floating-lights">
-            <div class="floating-light"></div>
-            <div class="floating-light"></div>
-            <div class="floating-light"></div>
-            <div class="floating-light"></div>
-            <div class="floating-light"></div>
-            <div class="floating-light"></div>
-        </div>
-
-        <div class="liquid-container">
-            <div class="liquid-ball"></div>
-            <div class="particles">
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
+        <!-- 轨道 loading -->
+        <div class="game-loader" aria-hidden="true">
+            <div class="game-loader__planet">
+                <div class="loader-radius1"></div>
+                <div class="loader-radius2"></div>
+                <div class="loader-radius3"></div>
+                <div class="loader-radius4"></div>
+                <div class="loader-mini1"></div>
+                <div class="loader-mini2"></div>
+                <div class="loader-mini3"></div>
+                <div class="loader-mini4"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" aria-hidden="true" focusable="false">
+                    <defs>
+                        <filter id="goo">
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur"></feGaussianBlur>
+                            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -7" result="goo"></feColorMatrix>
+                            <feBlend in="SourceGraphic" in2="goo"></feBlend>
+                        </filter>
+                    </defs>
+                </svg>
             </div>
         </div>
-        <div class="progress-container">
-            <div class="skeleton-progress"></div>
+
+        <div class="loading-copy">
             <div class="loading-text" id="loadingText">系统加载中</div>
         </div>
     </div>
@@ -2560,11 +2841,16 @@
                         <div class="settings-section-title"><i class="fas fa-desktop"></i> 桌面快捷方式</div>
                         <div class="settings-field">
                             <label>快捷方式图标（.ico 格式）</label>
-                            <div class="file-upload-wrapper">
-                                <button type="button" id="triggerIconUpload" class="file-upload-btn-sm">选择图标</button>
-                                <button type="button" id="clearIconBtn" class="clear-btn-sm">清除</button>
+                            <div class="field-hint" style="margin-bottom:10px;">默认加载安装目录 `icon` 文件夹中的 8 个内置图标，也可以额外选择自定义图标</div>
+                            <div id="shortcutBuiltinIconGrid" class="shortcut-icon-grid"></div>
+                            <div class="shortcut-icon-toolbar">
+                                <button type="button" id="triggerIconUpload" class="file-upload-btn-sm">选择自定义图标</button>
+                                <button type="button" id="clearIconBtn" class="clear-btn-sm">清除当前选择</button>
                             </div>
                             <div id="iconFileName" class="file-name-display" style="display:none;"></div>
+                            <div class="preview-box-sm" id="shortcutIconPreview" style="display:none;">
+                                <img id="shortcutIconPreviewImg" src="" alt="快捷方式图标预览">
+                            </div>
                         </div>
                         <div class="settings-field" style="margin-top:12px;">
                             <div class="field-hint" style="margin-bottom:10px;">快捷方式名称将使用「品牌信息」中的中文名称字段</div>
@@ -2985,18 +3271,6 @@
             const loginContainer = document.getElementById("loginContainer");
             const networkError = document.getElementById("networkError");
             const retryButton = document.getElementById("retryButton");
-            const loadingText = document.getElementById("loadingText");
-            
-            if (loadingText) {
-                const text = loadingText.textContent;
-                loadingText.textContent = '';
-                text.split('').forEach((letter, i) => {
-                    const span = document.createElement('span');
-                    span.textContent = letter;
-                    span.style.animationDelay = (i / 10) + 's';
-                    loadingText.appendChild(span);
-                });
-            }
             
             setTimeout(function() {
                 animationContainer.style.opacity = '0';
@@ -3248,9 +3522,22 @@
         card2Desc: "为星星的孩子点亮成长之路",
         card3Title: "无限可能",
         card3Desc: "连接未来，开启智慧教育新篇章",
-        shortcutIconPath: ""
+        shortcutIconPath: "",
+        shortcutIconMode: ""
     };
-        
+
+        const builtinShortcutIconNames = [
+            "AI.ico",
+            "app.ico",
+            "app2.ico",
+            "app4.ico",
+            "book.ico",
+            "icon.ico",
+            "math.ico",
+            "xqkf.ico"
+        ];
+
+        let builtinShortcutIcons = [];
         let currentConfig = { ...defaultConfig };
         
         async function loadConfig() {
@@ -3492,7 +3779,7 @@
             });
         }
         
-        function openSettings() {
+        async function openSettings() {
             const modal = document.getElementById('settingsModal');
             
             // 填充基本设置
@@ -3544,17 +3831,12 @@
                 bgPreview.style.display = 'none';
             }
 
-            // 恢复快捷方式图标路径显示
-            if (currentConfig.shortcutIconPath) {
-                document.getElementById('iconFileName').textContent = '已选择: ' + currentConfig.shortcutIconPath.split(/[/\\]/).pop();
-                document.getElementById('iconFileName').style.display = 'block';
-            } else {
-                document.getElementById('iconFileName').style.display = 'none';
-            }
-
             modal.classList.add('show');
             // 重置侧边栏 Tab 到第一项
             resetTabs();
+
+            await loadBuiltinShortcutIcons();
+            await updateShortcutIconDisplay();
         }
         
         // 预设系统名称选择处理
@@ -3607,7 +3889,8 @@
                 backgroundUrl: currentConfig.backgroundUrl || '',
 
                 // 快捷方式
-                shortcutIconPath: currentConfig.shortcutIconPath || ''
+                shortcutIconPath: currentConfig.shortcutIconPath || '',
+                shortcutIconMode: currentConfig.shortcutIconMode || ''
             };
 
             currentConfig = newConfig;
@@ -3673,6 +3956,161 @@
         }
 
         // 管理员验证相关变量
+        function getPathFileName(path) {
+            return (path || '').split(/[/\\]/).pop() || '';
+        }
+
+        function normalizePath(path) {
+            return (path || '').replace(/\\/g, '/').toLowerCase();
+        }
+
+        function toFilePreviewSrc(path) {
+            if (!path) return '';
+
+            const normalized = path.replace(/\\/g, '/');
+            if (/^[a-zA-Z]:\//.test(normalized)) {
+                return 'file:///' + normalized;
+            }
+            if (normalized.startsWith('//')) {
+                return 'file:' + normalized;
+            }
+            if (normalized.startsWith('/')) {
+                return 'file://' + normalized;
+            }
+            return normalized;
+        }
+
+        function fileUrlToDataUrl(fileUrl) {
+            return fetch(fileUrl)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load local file preview');
+                    }
+                    return response.blob();
+                })
+                .then((blob) => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resolve(e.target.result);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                }));
+        }
+
+        async function loadBuiltinShortcutIcons() {
+            let appDir = '';
+
+            if (window.__TAURI__ && window.__TAURI__.core) {
+                try {
+                    appDir = await window.__TAURI__.core.invoke('get_app_dir');
+                } catch (error) {
+                    console.error('获取安装目录失败:', error);
+                }
+            }
+
+            builtinShortcutIcons = builtinShortcutIconNames.map((fileName) => {
+                const isTauriPath = !!appDir;
+                const iconPath = isTauriPath
+                    ? appDir + '\\icon\\' + fileName
+                    : 'src/icon/' + fileName;
+
+                return {
+                    fileName,
+                    label: fileName.replace(/\.ico$/i, ''),
+                    path: iconPath,
+                    previewSrc: 'src/icon/' + fileName
+                };
+            });
+
+            const currentFileName = getPathFileName(currentConfig.shortcutIconPath);
+            if (currentFileName && builtinShortcutIconNames.includes(currentFileName) && currentConfig.shortcutIconMode !== 'custom') {
+                const matchedIcon = builtinShortcutIcons.find((icon) => icon.fileName === currentFileName);
+                if (matchedIcon) {
+                    currentConfig.shortcutIconPath = matchedIcon.path;
+                    currentConfig.shortcutIconMode = 'builtin';
+                }
+            }
+        }
+
+        function renderBuiltinShortcutIcons() {
+            const container = document.getElementById('shortcutBuiltinIconGrid');
+            if (!container) return;
+
+            if (!builtinShortcutIcons.length) {
+                container.innerHTML = '<div class="shortcut-icon-empty">未找到内置图标</div>';
+                return;
+            }
+
+            const selectedPath = normalizePath(currentConfig.shortcutIconPath);
+            const selectedFileName = getPathFileName(currentConfig.shortcutIconPath);
+            const selectedMode = currentConfig.shortcutIconMode || '';
+
+            container.innerHTML = builtinShortcutIcons.map((icon) => {
+                const isSelected = selectedMode === 'builtin'
+                    ? normalizePath(icon.path) === selectedPath
+                    : (!selectedMode && icon.fileName === selectedFileName);
+
+                return `
+                    <button
+                        type="button"
+                        class="shortcut-icon-card ${isSelected ? 'active' : ''}"
+                        data-icon-name="${icon.fileName}"
+                        title="${icon.label}"
+                        aria-label="${icon.label}"
+                    >
+                        <img class="shortcut-icon-thumb" src="${icon.previewSrc}" alt="${icon.fileName}">
+                    </button>
+                `;
+            }).join('');
+        }
+
+        async function updateShortcutIconDisplay() {
+            renderBuiltinShortcutIcons();
+
+            const fileNameDisplay = document.getElementById('iconFileName');
+            const previewBox = document.getElementById('shortcutIconPreview');
+            const previewImg = document.getElementById('shortcutIconPreviewImg');
+
+            if (!fileNameDisplay || !previewBox || !previewImg) return;
+
+            if (!currentConfig.shortcutIconPath) {
+                fileNameDisplay.style.display = 'none';
+                previewBox.style.display = 'none';
+                previewImg.removeAttribute('src');
+                return;
+            }
+
+            const selectedFileName = getPathFileName(currentConfig.shortcutIconPath);
+            const selectedBuiltinIcon = builtinShortcutIcons.find((icon) => icon.fileName === selectedFileName);
+            const isBuiltin = currentConfig.shortcutIconMode === 'builtin';
+
+            fileNameDisplay.textContent = (isBuiltin ? '已选择内置图标: ' : '已选择自定义图标: ') + selectedFileName;
+            fileNameDisplay.style.display = 'block';
+
+            try {
+                const previewSrc = isBuiltin && selectedBuiltinIcon
+                    ? selectedBuiltinIcon.previewSrc
+                    : await fileUrlToDataUrl(toFilePreviewSrc(currentConfig.shortcutIconPath));
+
+                previewImg.src = previewSrc;
+                previewBox.style.display = 'block';
+            } catch (error) {
+                console.error('快捷方式图标预览加载失败:', error);
+                previewBox.style.display = 'none';
+                previewImg.removeAttribute('src');
+            }
+        }
+
+        async function selectBuiltinShortcutIcon(fileName) {
+            const selectedIcon = builtinShortcutIcons.find((icon) => icon.fileName === fileName);
+            if (!selectedIcon) return;
+
+            currentConfig.shortcutIconPath = selectedIcon.path;
+            currentConfig.shortcutIconMode = 'builtin';
+            await updateShortcutIconDisplay();
+        }
+
         const ADMIN_PASSWORD = '299451';
         let adminClickCount = 0;
         let adminClickTimer = null;
@@ -3928,16 +4366,24 @@
 
             // ========== 桌面快捷方式 ==========
             // 选择图标
+            document.getElementById('shortcutBuiltinIconGrid').addEventListener('click', async function(e) {
+                const iconCard = e.target.closest('[data-icon-name]');
+                if (!iconCard) return;
+
+                await selectBuiltinShortcutIcon(iconCard.dataset.iconName);
+            });
+
             document.getElementById('triggerIconUpload').addEventListener('click', async function() {
                 if (window.__TAURI__ && window.__TAURI__.core) {
                     try {
                         const filePath = await window.__TAURI__.core.invoke('select_file_dialog', {
-                            title: '选择快捷方式图标'
+                            title: '选择快捷方式图标',
+                            filters: [['ICO 图标', ['ico']]]
                         });
                         if (filePath) {
                             currentConfig.shortcutIconPath = filePath;
-                            document.getElementById('iconFileName').textContent = '已选择: ' + filePath.split(/[/\\]/).pop();
-                            document.getElementById('iconFileName').style.display = 'block';
+                            currentConfig.shortcutIconMode = 'custom';
+                            await updateShortcutIconDisplay();
                         }
                     } catch (error) {
                         console.error('选择图标失败:', error);
@@ -3948,9 +4394,10 @@
             });
 
             // 清除图标
-            document.getElementById('clearIconBtn').addEventListener('click', function() {
+            document.getElementById('clearIconBtn').addEventListener('click', async function() {
                 currentConfig.shortcutIconPath = '';
-                document.getElementById('iconFileName').style.display = 'none';
+                currentConfig.shortcutIconMode = '';
+                await updateShortcutIconDisplay();
             });
 
             // 创建桌面快捷方式

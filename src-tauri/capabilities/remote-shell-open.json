@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "remote-shell-open",
+  "description": "Allow the main window to open external links from the xcpm remote site via the shell plugin.",
+  "local": false,
+  "windows": ["main"],
+  "remote": {
+    "urls": [
+      "https://xcpm.hzxckj308.com:8008/*"
+    ]
+  },
+  "permissions": [
+    "shell:default"
+  ]
+}

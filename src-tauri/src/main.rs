@@ -1,11 +1,42 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri_plugin_dialog::DialogExt;
 
 /// 应用配置结构体（通用 JSON，不限定字段）
 pub type AppConfig = serde_json::Value;
+
+const BUILTIN_SHORTCUT_ICONS: &[(&str, &[u8])] = &[
+    ("AI.ico", include_bytes!("../../dist/src/icon/AI.ico")),
+    ("app.ico", include_bytes!("../../dist/src/icon/app.ico")),
+    ("app2.ico", include_bytes!("../../dist/src/icon/app2.ico")),
+    ("app4.ico", include_bytes!("../../dist/src/icon/app4.ico")),
+    ("book.ico", include_bytes!("../../dist/src/icon/book.ico")),
+    ("icon.ico", include_bytes!("../../dist/src/icon/icon.ico")),
+    ("math.ico", include_bytes!("../../dist/src/icon/math.ico")),
+    ("xqkf.ico", include_bytes!("../../dist/src/icon/xqkf.ico")),
+];
+
+fn ensure_builtin_shortcut_icons(icon_dir: &Path) -> Result<(), String> {
+    if !icon_dir.exists() {
+        std::fs::create_dir_all(icon_dir)
+            .map_err(|e| format!("创建内置图标目录失败: {}", e))?;
+    }
+
+    for (name, data) in BUILTIN_SHORTCUT_ICONS {
+        let icon_path = icon_dir.join(name);
+        if icon_path.exists() {
+            continue;
+        }
+
+        std::fs::write(&icon_path, data)
+            .map_err(|e| format!("写入内置图标失败 ({}): {}", name, e))?;
+    }
+
+    Ok(())
+}
 
 /// 获取 exe 所在目录的 config.json 路径
 fn get_config_path() -> Result<PathBuf, String> {
@@ -72,14 +103,23 @@ async fn select_file_dialog(
     app: tauri::AppHandle,
     _window: tauri::Window,
     title: String,
+    filters: Option<Vec<(String, Vec<String>)>>,
 ) -> Result<Option<String>, String> {
     use tauri_plugin_dialog::DialogExt;
 
-    let file_path = app
+    let mut dialog = app
         .dialog()
         .file()
-        .set_title(&title)
-        .blocking_pick_file();
+        .set_title(&title);
+
+    if let Some(filters) = filters {
+        for (name, extensions) in filters {
+            let extensions: Vec<&str> = extensions.iter().map(String::as_str).collect();
+            dialog = dialog.add_filter(&name, &extensions);
+        }
+    }
+
+    let file_path = dialog.blocking_pick_file();
 
     Ok(file_path.map(|p| p.to_string()))
 }
@@ -440,6 +480,43 @@ const F12_JS: &str = r#"
 })();
 "#;
 
+const DIRECT_DOWNLOAD_LINK_JS: &str = r#"
+(function() {
+    if (window.__direct_download_fix_injected) return;
+    window.__direct_download_fix_injected = true;
+
+    document.addEventListener('click', function(event) {
+        var el = event.target;
+        while (el && el.tagName !== 'A') {
+            el = el.parentElement;
+        }
+        if (!el) return;
+
+        var href = el.getAttribute('href');
+        if (!href) return;
+
+        var url;
+        try {
+            url = new URL(href, window.location.href);
+        } catch (_) {
+            return;
+        }
+
+        var pathname = (url.pathname || '').toLowerCase();
+        var isTargetSite = url.hostname === 'xcpm.hzxckj308.com' && (url.port === '8008' || url.port === '');
+        var isDownloadLink =
+            pathname.indexOf('/filemould/') !== -1 ||
+            /\.(doc|docx|xls|xlsx|ppt|pptx|pdf|zip|rar|7z|txt)$/.test(pathname);
+
+        if (isTargetSite && isDownloadLink) {
+            el.target = '_self';
+            el.removeAttribute('target');
+            el.removeAttribute('rel');
+        }
+    }, true);
+})();
+"#;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -514,6 +591,15 @@ fn main() {
             }
 
             // 程序化创建主窗口
+            if let Ok(exe_path) = std::env::current_exe() {
+                if let Some(exe_dir) = exe_path.parent() {
+                    let icon_dir = exe_dir.join("icon");
+                    if let Err(error) = ensure_builtin_shortcut_icons(&icon_dir) {
+                        println!("[Setup] 鍚屾鍐呯疆 icon 鏂囦欢澶辫触: {}", error);
+                    }
+                }
+            }
+
             let url = if cfg!(debug_assertions) {
                 WebviewUrl::External("http://localhost:1420".parse().unwrap())
             } else {
@@ -526,6 +612,67 @@ fn main() {
                 .min_inner_size(1024.0, 768.0)
                 .center()
                 .resizable(true)
+                .on_download(|webview, event| {
+                    match event {
+                        tauri::webview::DownloadEvent::Requested { url, destination } => {
+                            let is_target_download = url.host_str() == Some("xcpm.hzxckj308.com")
+                                && url.path().to_ascii_lowercase().contains("/filemould/");
+
+                            if !is_target_download {
+                                return true;
+                            }
+
+                            let suggested_name = destination
+                                .file_name()
+                                .and_then(|name| name.to_str())
+                                .filter(|name| !name.is_empty())
+                                .map(|name| name.to_string())
+                                .or_else(|| {
+                                    url.path_segments()
+                                        .and_then(|mut segments| segments.next_back())
+                                        .filter(|name| !name.is_empty())
+                                        .map(|name| name.to_string())
+                                })
+                                .unwrap_or_else(|| "download".to_string());
+
+                            let mut dialog = rfd::FileDialog::new()
+                                .set_title("保存下载文件")
+                                .set_file_name(&suggested_name);
+
+                            if let Some(parent) = destination.parent() {
+                                dialog = dialog.set_directory(parent);
+                            }
+
+                            if let Some(path) = dialog.save_file() {
+                                *destination = path;
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        tauri::webview::DownloadEvent::Finished { url, path, success } => {
+                            let is_target_download = url.host_str() == Some("xcpm.hzxckj308.com")
+                                && url.path().to_ascii_lowercase().contains("/filemould/");
+
+                            if is_target_download && success {
+                                let message = if let Some(path) = path {
+                                    format!("文件已下载到:\n{}", path.display())
+                                } else {
+                                    "文件下载完成。".to_string()
+                                };
+
+                                webview
+                                    .app_handle()
+                                    .dialog()
+                                    .message(message)
+                                    .title("下载完成")
+                                    .show(|_| {});
+                            }
+                            true
+                        }
+                        _ => true,
+                    }
+                })
                 .on_page_load(|window, payload| {
                     if payload.event() == tauri::webview::PageLoadEvent::Finished {
                         let url = payload.url();
@@ -537,6 +684,7 @@ fn main() {
                             let _ = window.eval(NAV_BAR_JS);
                             // 也注入 F12 支持
                             let _ = window.eval(F12_JS);
+                            let _ = window.eval(DIRECT_DOWNLOAD_LINK_JS);
                             println!("[PageLoad] Injected nav bar + F12");
                         } else if url_str.starts_with("tauri://") || url_str.starts_with("http://localhost") || url_str.starts_with("https://tauri.") || url_str.contains("index.html") || url_str.starts_with("file://") {
                             // 登录页面：注入 F12 DevTools 支持
@@ -552,4 +700,75 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ensure_builtin_shortcut_icons, BUILTIN_SHORTCUT_ICONS};
+    use std::{
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    struct TempDirGuard {
+        path: PathBuf,
+    }
+
+    impl TempDirGuard {
+        fn new(prefix: &str) -> Self {
+            let unique = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system time before unix epoch")
+                .as_nanos();
+            let path = std::env::temp_dir().join(format!("{}_{}", prefix, unique));
+            std::fs::create_dir_all(&path).expect("failed to create temp dir");
+            Self { path }
+        }
+    }
+
+    impl Drop for TempDirGuard {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.path);
+        }
+    }
+
+    #[test]
+    fn ensure_builtin_shortcut_icons_creates_all_icons_in_empty_directory() {
+        let temp_dir = TempDirGuard::new("shinecaniep_icons_empty");
+        let icon_dir = temp_dir.path.join("icon");
+
+        ensure_builtin_shortcut_icons(&icon_dir).expect("expected builtin icons to be written");
+
+        for (name, bytes) in BUILTIN_SHORTCUT_ICONS {
+            let icon_path = icon_dir.join(name);
+            assert!(icon_path.exists(), "missing builtin icon: {}", name);
+            assert_eq!(
+                std::fs::read(&icon_path).expect("failed to read written icon"),
+                *bytes,
+                "icon contents do not match for {}",
+                name
+            );
+        }
+    }
+
+    #[test]
+    fn ensure_builtin_shortcut_icons_repairs_missing_files_in_existing_directory() {
+        let temp_dir = TempDirGuard::new("shinecaniep_icons_partial");
+        let icon_dir = temp_dir.path.join("icon");
+        std::fs::create_dir_all(&icon_dir).expect("failed to create partial icon dir");
+
+        let existing_icon_path = icon_dir.join(BUILTIN_SHORTCUT_ICONS[0].0);
+        std::fs::write(&existing_icon_path, BUILTIN_SHORTCUT_ICONS[0].1)
+            .expect("failed to seed existing icon");
+
+        ensure_builtin_shortcut_icons(&icon_dir).expect("expected missing icons to be restored");
+
+        for (name, _) in BUILTIN_SHORTCUT_ICONS {
+            assert!(
+                icon_dir.join(name).exists(),
+                "missing builtin icon after repair: {}",
+                name
+            );
+        }
+    }
 }
