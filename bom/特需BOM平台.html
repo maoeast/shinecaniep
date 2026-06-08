@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<!-- saved from url=(0032)https://xcpm.hzxckj308.com:8008/ -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Required meta tags -->
+
+    
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>特需BOM平台</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="https://xcpm.hzxckj308.com:8008/images/favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./特需BOM平台_files/bootstrap.min.css">
+    <!-- Typography CSS -->
+    <link rel="stylesheet" href="./特需BOM平台_files/typography.css">
+    <!-- Style CSS -->
+    <link rel="stylesheet" href="./特需BOM平台_files/style.css">
+    <!-- Responsive CSS -->
+    <link rel="stylesheet" href="./特需BOM平台_files/responsive.css">
+    <link rel="stylesheet" type="text/css" href="./特需BOM平台_files/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./特需BOM平台_files/icon.css">
+
+    <script type="text/javascript" src="./特需BOM平台_files/jquery.min.js.download"></script>
+    <script type="text/javascript" src="./特需BOM平台_files/jquery.easyui.min.js.download"></script>
+    <link rel="stylesheet" href="./特需BOM平台_files/layui.css" type="text/css">
+    <link rel="stylesheet" href="./特需BOM平台_files/zTreeStyle.css" type="text/css">
+    <link rel="stylesheet" href="./特需BOM平台_files/jquery.select.zTree.v1.2.css" type="text/css">
+
+
+<style type="text/css">.apexcharts-canvas {
+  position: relative;
+  user-select: none;
+  /* cannot give overflow: hidden as it will crop tooltips which overflow outside chart area */
+}
+
+/* scrollbar is not visible by default for legend, hence forcing the visibility */
+.apexcharts-canvas ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 6px;
+}
+.apexcharts-canvas ::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0,0,0,.5);
+  box-shadow: 0 0 1px rgba(255,255,255,.5);
+  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+.apexcharts-canvas.dark {
+  background: #343F57;
+}
+
+.apexcharts-inner {
+  position: relative;
+}
+
+.legend-mouseover-inactive {
+  transition: 0.15s ease all;
+  opacity: 0.20;
+}
+
+.apexcharts-series-collapsed {
+  opacity: 0;
+}
+
+.apexcharts-gridline, .apexcharts-text {
+  pointer-events: none;
+}
+
+.apexcharts-tooltip {
+  border-radius: 5px;
+  box-shadow: 2px 2px 6px -4px #999;
+  cursor: default;
+  font-size: 14px;
+  left: 62px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  z-index: 12;
+  transition: 0.15s ease all;
+}
+.apexcharts-tooltip.light {
+  border: 1px solid #e3e3e3;
+  background: rgba(255, 255, 255, 0.96);
+}
+.apexcharts-tooltip.dark {
+  color: #fff;
+  background: rgba(30,30,30, 0.8);
+}
+.apexcharts-tooltip * {
+  font-family: inherit;
+}
+
+.apexcharts-tooltip .apexcharts-marker,
+.apexcharts-area-series .apexcharts-area,
+.apexcharts-line {
+  pointer-events: none;
+}
+
+.apexcharts-tooltip.active {
+  opacity: 1;
+  transition: 0.15s ease all;
+}
+
+.apexcharts-tooltip-title {
+  padding: 6px;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.apexcharts-tooltip.light .apexcharts-tooltip-title {
+  background: #ECEFF1;
+  border-bottom: 1px solid #ddd;
+}
+.apexcharts-tooltip.dark .apexcharts-tooltip-title {
+  background: rgba(0, 0, 0, 0.7);
+  border-bottom: 1px solid #333;
+}
+
+.apexcharts-tooltip-text-value,
+.apexcharts-tooltip-text-z-value {
+  display: inline-block;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+.apexcharts-tooltip-text-z-label:empty,
+.apexcharts-tooltip-text-z-value:empty {
+  display: none;
+}
+
+.apexcharts-tooltip-text-value,
+.apexcharts-tooltip-text-z-value {
+  font-weight: 600;
+}
+
+.apexcharts-tooltip-marker {
+  width: 12px;
+  height: 12px;
+  position: relative;
+  top: 0px;
+  margin-right: 10px;
+  border-radius: 50%;
+}
+
+.apexcharts-tooltip-series-group {
+  padding: 0 10px;
+  display: none;
+  text-align: left;
+  justify-content: left;
+  align-items: center;
+}
+
+.apexcharts-tooltip-series-group.active .apexcharts-tooltip-marker {
+  opacity: 1;
+}
+.apexcharts-tooltip-series-group.active, .apexcharts-tooltip-series-group:last-child {
+  padding-bottom: 4px;
+}
+.apexcharts-tooltip-series-group-hidden {
+  opacity: 0;
+  height: 0;
+  line-height: 0;
+  padding: 0 !important;
+}
+.apexcharts-tooltip-y-group {
+  padding: 6px 0 5px;
+}
+.apexcharts-tooltip-candlestick {
+  padding: 4px 8px;
+}
+.apexcharts-tooltip-candlestick > div {
+  margin: 4px 0;
+}
+.apexcharts-tooltip-candlestick span.value {
+  font-weight: bold;
+}
+
+.apexcharts-tooltip-rangebar {
+  padding: 5px 8px;
+}
+
+.apexcharts-tooltip-rangebar .category {
+  font-weight: 600;
+  color: #777;
+}
+
+.apexcharts-tooltip-rangebar .series-name {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.apexcharts-xaxistooltip {
+  opacity: 0;
+  padding: 9px 10px;
+  pointer-events: none;
+  color: #373d3f;
+  font-size: 13px;
+  text-align: center;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 10;
+  background: #ECEFF1;
+  border: 1px solid #90A4AE;
+  transition: 0.15s ease all;
+}
+
+.apexcharts-xaxistooltip.dark {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: #fff;
+}
+
+.apexcharts-xaxistooltip:after, .apexcharts-xaxistooltip:before {
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.apexcharts-xaxistooltip:after {
+  border-color: rgba(236, 239, 241, 0);
+  border-width: 6px;
+  margin-left: -6px;
+}
+.apexcharts-xaxistooltip:before {
+  border-color: rgba(144, 164, 174, 0);
+  border-width: 7px;
+  margin-left: -7px;
+}
+
+.apexcharts-xaxistooltip-bottom:after, .apexcharts-xaxistooltip-bottom:before {
+  bottom: 100%;
+}
+
+.apexcharts-xaxistooltip-top:after, .apexcharts-xaxistooltip-top:before {
+  top: 100%;
+}
+
+.apexcharts-xaxistooltip-bottom:after {
+  border-bottom-color: #ECEFF1;
+}
+.apexcharts-xaxistooltip-bottom:before {
+  border-bottom-color: #90A4AE;
+}
+
+.apexcharts-xaxistooltip-bottom.dark:after {
+  border-bottom-color: rgba(0, 0, 0, 0.5);
+}
+.apexcharts-xaxistooltip-bottom.dark:before {
+  border-bottom-color: rgba(0, 0, 0, 0.5);
+}
+
+.apexcharts-xaxistooltip-top:after {
+  border-top-color:#ECEFF1
+}
+.apexcharts-xaxistooltip-top:before {
+  border-top-color: #90A4AE;
+}
+.apexcharts-xaxistooltip-top.dark:after {
+  border-top-color:rgba(0, 0, 0, 0.5);
+}
+.apexcharts-xaxistooltip-top.dark:before {
+  border-top-color: rgba(0, 0, 0, 0.5);
+}
+
+
+.apexcharts-xaxistooltip.active {
+  opacity: 1;
+  transition: 0.15s ease all;
+}
+
+.apexcharts-yaxistooltip {
+  opacity: 0;
+  padding: 4px 10px;
+  pointer-events: none;
+  color: #373d3f;
+  font-size: 13px;
+  text-align: center;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 10;
+  background: #ECEFF1;
+  border: 1px solid #90A4AE;
+}
+
+.apexcharts-yaxistooltip.dark {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: #fff;
+}
+
+.apexcharts-yaxistooltip:after, .apexcharts-yaxistooltip:before {
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.apexcharts-yaxistooltip:after {
+  border-color: rgba(236, 239, 241, 0);
+  border-width: 6px;
+  margin-top: -6px;
+}
+.apexcharts-yaxistooltip:before {
+  border-color: rgba(144, 164, 174, 0);
+  border-width: 7px;
+  margin-top: -7px;
+}
+
+.apexcharts-yaxistooltip-left:after, .apexcharts-yaxistooltip-left:before {
+  left: 100%;
+}
+
+.apexcharts-yaxistooltip-right:after, .apexcharts-yaxistooltip-right:before {
+  right: 100%;
+}
+
+.apexcharts-yaxistooltip-left:after {
+  border-left-color: #ECEFF1;
+}
+.apexcharts-yaxistooltip-left:before {
+  border-left-color: #90A4AE;
+}
+.apexcharts-yaxistooltip-left.dark:after {
+  border-left-color: rgba(0, 0, 0, 0.5);
+}
+.apexcharts-yaxistooltip-left.dark:before {
+  border-left-color: rgba(0, 0, 0, 0.5);
+}
+
+.apexcharts-yaxistooltip-right:after {
+  border-right-color: #ECEFF1;
+}
+.apexcharts-yaxistooltip-right:before {
+  border-right-color: #90A4AE;
+}
+.apexcharts-yaxistooltip-right.dark:after {
+  border-right-color: rgba(0, 0, 0, 0.5);
+}
+.apexcharts-yaxistooltip-right.dark:before {
+  border-right-color: rgba(0, 0, 0, 0.5);
+}
+
+.apexcharts-yaxistooltip.active {
+  opacity: 1;
+}
+.apexcharts-yaxistooltip-hidden {
+  display: none;
+}
+
+.apexcharts-xcrosshairs, .apexcharts-ycrosshairs {
+  pointer-events: none;
+  opacity: 0;
+  transition: 0.15s ease all;
+}
+
+.apexcharts-xcrosshairs.active, .apexcharts-ycrosshairs.active {
+  opacity: 1;
+  transition: 0.15s ease all;
+}
+
+.apexcharts-ycrosshairs-hidden {
+  opacity: 0;
+}
+
+.apexcharts-zoom-rect {
+  pointer-events: none;
+}
+.apexcharts-selection-rect {
+  cursor: move;
+}
+
+.svg_select_points, .svg_select_points_rot {
+  opacity: 0;
+  visibility: hidden;
+}
+.svg_select_points_l, .svg_select_points_r {
+  cursor: ew-resize;
+  opacity: 1;
+  visibility: visible;
+  fill: #888;
+}
+.apexcharts-canvas.zoomable .hovering-zoom {
+  cursor: crosshair
+}
+.apexcharts-canvas.zoomable .hovering-pan {
+  cursor: move
+}
+
+.apexcharts-xaxis,
+.apexcharts-yaxis {
+  pointer-events: none;
+}
+
+.apexcharts-zoom-icon,
+.apexcharts-zoom-in-icon,
+.apexcharts-zoom-out-icon,
+.apexcharts-reset-zoom-icon,
+.apexcharts-pan-icon,
+.apexcharts-selection-icon,
+.apexcharts-menu-icon,
+.apexcharts-toolbar-custom-icon {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  line-height: 24px;
+  color: #6E8192;
+  text-align: center;
+}
+
+
+.apexcharts-zoom-icon svg,
+.apexcharts-zoom-in-icon svg,
+.apexcharts-zoom-out-icon svg,
+.apexcharts-reset-zoom-icon svg,
+.apexcharts-menu-icon svg {
+  fill: #6E8192;
+}
+.apexcharts-selection-icon svg {
+  fill: #444;
+  transform: scale(0.76)
+}
+
+.dark .apexcharts-zoom-icon svg,
+.dark .apexcharts-zoom-in-icon svg,
+.dark .apexcharts-zoom-out-icon svg,
+.dark .apexcharts-reset-zoom-icon svg,
+.dark .apexcharts-pan-icon svg,
+.dark .apexcharts-selection-icon svg,
+.dark .apexcharts-menu-icon svg,
+.dark .apexcharts-toolbar-custom-icon svg{
+  fill: #f3f4f5;
+}
+
+.apexcharts-canvas .apexcharts-zoom-icon.selected svg,
+.apexcharts-canvas .apexcharts-selection-icon.selected svg,
+.apexcharts-canvas .apexcharts-reset-zoom-icon.selected svg {
+  fill: #008FFB;
+}
+.light .apexcharts-selection-icon:not(.selected):hover svg,
+.light .apexcharts-zoom-icon:not(.selected):hover svg,
+.light .apexcharts-zoom-in-icon:hover svg,
+.light .apexcharts-zoom-out-icon:hover svg,
+.light .apexcharts-reset-zoom-icon:hover svg,
+.light .apexcharts-menu-icon:hover svg {
+  fill: #333;
+}
+
+.apexcharts-selection-icon, .apexcharts-menu-icon {
+  position: relative;
+}
+.apexcharts-reset-zoom-icon {
+  margin-left: 5px;
+}
+.apexcharts-zoom-icon, .apexcharts-reset-zoom-icon, .apexcharts-menu-icon {
+  transform: scale(0.85);
+}
+
+.apexcharts-zoom-in-icon, .apexcharts-zoom-out-icon {
+  transform: scale(0.7)
+}
+
+.apexcharts-zoom-out-icon {
+  margin-right: 3px;
+}
+
+.apexcharts-pan-icon {
+  transform: scale(0.62);
+  position: relative;
+  left: 1px;
+  top: 0px;
+}
+.apexcharts-pan-icon svg {
+  fill: #fff;
+  stroke: #6E8192;
+  stroke-width: 2;
+}
+.apexcharts-pan-icon.selected svg {
+  stroke: #008FFB;
+}
+.apexcharts-pan-icon:not(.selected):hover svg {
+  stroke: #333;
+}
+
+.apexcharts-toolbar {
+  position: absolute;
+  z-index: 11;
+  top: 0px;
+  right: 3px;
+  max-width: 176px;
+  text-align: right;
+  border-radius: 3px;
+  padding: 0px 6px 2px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.apexcharts-toolbar svg {
+  pointer-events: none;
+}
+
+.apexcharts-menu {
+  background: #fff;
+  position: absolute;
+  top: 100%;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 3px;
+  right: 10px;
+  opacity: 0;
+  min-width: 110px;
+  transition: 0.15s ease all;
+  pointer-events: none;
+}
+
+.apexcharts-menu.open {
+  opacity: 1;
+  pointer-events: all;
+  transition: 0.15s ease all;
+}
+
+.apexcharts-menu-item {
+  padding: 6px 7px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.light .apexcharts-menu-item:hover {
+  background: #eee;
+}
+.dark .apexcharts-menu {
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+}
+
+@media screen and (min-width: 768px) {
+  .apexcharts-toolbar {
+    /*opacity: 0;*/
+  }
+
+  .apexcharts-canvas:hover .apexcharts-toolbar {
+    opacity: 1;
+  }
+}
+
+.apexcharts-datalabel.hidden {
+  opacity: 0;
+}
+
+.apexcharts-pie-label,
+.apexcharts-datalabel, .apexcharts-datalabel-label, .apexcharts-datalabel-value {
+  cursor: default;
+  pointer-events: none;
+}
+
+.apexcharts-pie-label-delay {
+  opacity: 0;
+  animation-name: opaque;
+  animation-duration: 0.3s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+}
+
+.apexcharts-canvas .hidden {
+  opacity: 0;
+}
+
+.apexcharts-hide .apexcharts-series-points {
+  opacity: 0;
+}
+
+.apexcharts-area-series .apexcharts-series-markers .apexcharts-marker.no-pointer-events,
+.apexcharts-line-series .apexcharts-series-markers .apexcharts-marker.no-pointer-events, .apexcharts-radar-series path, .apexcharts-radar-series polygon {
+  pointer-events: none;
+}
+
+/* markers */
+
+.apexcharts-marker {
+  transition: 0.15s ease all;
+}
+
+@keyframes opaque {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Resize generated styles */
+@keyframes resizeanim {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.resize-triggers {
+  animation: 1ms resizeanim;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.resize-triggers, .resize-triggers > div, .contract-trigger:before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.resize-triggers > div {
+  background: #eee;
+  overflow: auto;
+}
+
+.contract-trigger:before {
+  width: 200%;
+  height: 200%;
+}
+</style></head>
+<body style="">
+<!-- loader Start -->
+<div id="loading" style="display: none;">
+    <div id="loading-center">
+    </div>
+</div>
+<!-- loader END -->
+<!-- Sign in Start -->
+
+<section class="sign-in-page">
+    <div class="container sign-in-page-bg mt-5 p-0">
+        <div class="row no-gutters">
+            <div class="col-md-6 text-center">
+                <div class="sign-in-detail text-white">
+                    <a class="sign-in-logo mb-5" href="https://xcpm.hzxckj308.com:8008/#"><img src="./特需BOM平台_files/logo-white.png" class="img-fluid" alt="logo"></a>
+                    <div class="owl-carousel owl-loaded owl-drag" data-autoplay="true" data-loop="true" data-nav="false" data-dots="true" data-items="1" data-items-laptop="1" data-items-tab="1" data-items-mobile="1" data-items-mobile-sm="1" data-margin="0">
+                        
+                        
+                        
+                    <div class="owl-stage-outer"><div class="owl-stage" style="transform: translate3d(-1110px, 0px, 0px); transition: 0.25s; width: 2590px;"><div class="owl-item cloned" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/2.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的特需评估</h4>
+
+                        </div></div><div class="owl-item cloned" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/3.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的成长训练</h4>
+
+                        </div></div><div class="owl-item" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/1.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的成长资料</h4>
+
+                        </div></div><div class="owl-item active" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/2.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的特需评估</h4>
+
+                        </div></div><div class="owl-item" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/3.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的成长训练</h4>
+
+                        </div></div><div class="owl-item cloned" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/1.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的成长资料</h4>
+
+                        </div></div><div class="owl-item cloned" style="width: 370px;"><div class="item">
+                            <img src="./特需BOM平台_files/2.png" class="img-fluid mb-4" alt="logo">
+                            <h4 class="mb-1 text-white">我的特需评估</h4>
+
+                        </div></div></div></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><i class="fa fa-angle-left fa-2x"></i></button><button type="button" role="presentation" class="owl-next"><i class="fa fa-angle-right fa-2x"></i></button></div><div class="owl-dots"><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot active"><span></span></button><button role="button" class="owl-dot"><span></span></button></div></div>
+                </div>
+            </div>
+
+            <div class="col-md-6 position-relative">
+                <!--  <form  action="u_yangstyle.html?action=getEditu_yangstyleList"method="post">
+                    <button type="submit"   class="btn btn-primary float-right">样式登录</button>
+
+                </form> -->
+                <div class="sign-in-from">
+
+                    
+
+                    <div class="iq-card-body">
+
+                        <h1>欢迎登录</h1>
+                        <ul class="nav nav-tabs justify-content-end" id="myTab-4" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab-end" data-toggle="tab" href="https://xcpm.hzxckj308.com:8008/#home-end" role="tab" aria-controls="home" aria-selected="true">账号登录</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab-end" data-toggle="tab" href="https://xcpm.hzxckj308.com:8008/#profile-end" role="tab" aria-controls="profile" aria-selected="false">人脸登录</a>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content" id="myTabContent-5">
+                            <div class="tab-pane fade show active" id="home-end" role="tabpanel" aria-labelledby="home-tab-end">
+                                <form class="mt-4  needs-validation" novalidate="" action="https://xcpm.hzxckj308.com:8008/users.html?action=login" method="post" onsubmit="checkpassForm()">
+                                    <div class="form-group">
+                                        <label for="loginusername">用户名</label>
+                                        <input type="text" class="form-control mb-0" name="txtusername" id="loginusername" placeholder="用户名" aria-describedby="validationTooltipUsernamePrepend" required="">
+                                        <div class="invalid-tooltip">
+                                           输入用户名
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="loginuserpassword">密码</label>
+                                        <input type="password" class="form-control mb-0" name="txtpassword" id="loginuserpassword" placeholder="密码" aria-describedby="validationTooltipUsernamePrepend" required="">
+                                        <input type="hidden" name="pwd" id="md5_pwd" value="">
+                                        <div class="invalid-tooltip">
+                                            输入密码
+                                        </div>
+                                    </div>
+                                    <div class="d-inline-block w-100">
+                                        <div class="custom-control custom-checkbox d-inline-block mt-2 pt-1">
+                                            <input type="checkbox" class="custom-control-input" id="customCheck1">
+
+                                        </div>
+                                        <button type="submit" id="btnpassload" class="btn btn-primary float-right" onclick="checkpassForm()">登录</button>
+
+                                        <p>
+                                            
+                                        </p>
+
+
+
+                                    </div>
+                                    <div class="sign-info">
+
+                                        <ul class="iq-social-media">
+                                            <li><a href="https://xcpm.hzxckj308.com:8008/PaiTrain/PaiTrain8/MF_Happily/MF_Happily.jsp">MF_Happily<i class="ri-facebook-box-line"></i></a></li>
+                                            <li><a href="https://xcpm.hzxckj308.com:8008/#"><i class="ri-twitter-line"></i></a></li>
+                                            <li><a href="https://xcpm.hzxckj308.com:8008/#"><i class="ri-instagram-line"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </form>
+                               </div>
+                            <div class="tab-pane fade" id="profile-end" role="tabpanel" aria-labelledby="profile-tab-end">
+                                <div class="iq-card-body text-center">
+                                    <div id="face-power" class="doc-profile" style=" margin:0 auto; width:200px; height:200px; ">
+
+                                       <img class="rounded-circle img-thumbnail avatar-150" id="preview" src="./特需BOM平台_files/16.jpg" alt="profile-pic">
+                                        <div id="main__facephotodiv">
+                                           <img src="https://xcpm.hzxckj308.com:8008/" id="facepzimg">
+                                        </div>
+                                    </div>
+
+                                        <p class="mb-0">
+                                        <a id="facepazbutton" class="upload-button btn iq-bg-primary"> 拍照</a>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                         <a id="faceloadbutton" class="upload-button btn iq-bg-primary"> 登录</a>
+                                        </p>
+
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Sign in END -->
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="./特需BOM平台_files/jquery.min(1).js.download"></script>
+<script src="./特需BOM平台_files/popper.min.js.download"></script>
+<script src="./特需BOM平台_files/bootstrap.min.js.download"></script>
+<!-- Appear JavaScript -->
+<script src="./特需BOM平台_files/jquery.appear.js.download"></script>
+<!-- Countdown JavaScript -->
+<script src="./特需BOM平台_files/countdown.min.js.download"></script>
+<!-- Counterup JavaScript -->
+<script src="./特需BOM平台_files/waypoints.min.js.download"></script>
+<script src="./特需BOM平台_files/jquery.counterup.min.js.download"></script>
+<!-- Wow JavaScript -->
+<script src="./特需BOM平台_files/wow.min.js.download"></script>
+<!-- Apexcharts JavaScript -->
+<script src="./特需BOM平台_files/apexcharts.js.download"></script>
+<!-- Slick JavaScript -->
+<script src="./特需BOM平台_files/slick.min.js.download"></script>
+<!-- Select2 JavaScript -->
+<script src="./特需BOM平台_files/select2.min.js.download"></script>
+<!-- Owl Carousel JavaScript -->
+<script src="./特需BOM平台_files/owl.carousel.min.js.download"></script>
+<!-- Magnific Popup JavaScript -->
+<script src="./特需BOM平台_files/jquery.magnific-popup.min.js.download"></script>
+<!-- Smooth Scrollbar JavaScript -->
+<script src="./特需BOM平台_files/smooth-scrollbar.js.download"></script>
+<!-- Chart Custom JavaScript -->
+<script src="./特需BOM平台_files/chart-custom.js.download"></script>
+<!-- Custom JavaScript -->
+<script src="./特需BOM平台_files/custom.js.download"></script>//
+
+<script type="text/javascript" src="./特需BOM平台_files/jquery-1.10.2.js.download"></script>
+<script type="text/javascript" src="./特需BOM平台_files/jquery.ztree.core.js.download"></script>
+<script type="text/javascript" src="./特需BOM平台_files/jquery.ztree.exhide.js.download"></script>
+<script type="text/javascript" src="./特需BOM平台_files/jquery.select.zTree.v1.2.min.js.download"></script>
+
+<script src="./特需BOM平台_files/jquery-3.3.1.js.download"></script>
+<script src="./特需BOM平台_files/cropbox.js.download"></script>
+<script src="./特需BOM平台_files/webcam.js.download"></script>
+<script type="text/javascript">
+
+    $(function(){
+        Webcam.set({
+            width: 390,
+            height: 390,
+
+            image_format: 'jpeg',
+            jpeg_quality: 95
+        });
+
+        $("#facepazbutton").on('click', function() {
+            Webcam.attach('#face-power');
+        })
+        let cropper = null;
+        let imgData ="";
+
+
+        $("#faceloadbutton").on('click', function() {
+
+            Webcam.freeze();
+            Webcam.snap(function(data_uri) {
+
+                $("#facepzimg").attr("src", data_uri);
+                imgData=data_uri;
+            });// snap
+
+            var imgData1 = imgData.substring(23);
+
+
+            $.ajax({
+                type: "post",
+                url: "FaceTrain.html?action=login",
+                data: {"img":imgData1},
+                dataType : "text",
+                success: function(data){
+
+                    if (data=="FaceSuccess") {
+
+                        window.location.href="Hmain.jsp";
+                    }
+                    else
+                    {
+                        alert(data);
+                    }
+
+                },error:function(msg){
+
+                   alert("检测到不是你的脸");
+                }
+            });
+
+        })// 人脸登陆
+
+
+    });
+
+    function checkpassForm(){
+
+
+
+        var input_loginusername= document.getElementById('loginusername');
+        var input_pwd= document.getElementById('loginuserpassword');
+       // if (input_loginusername.value==""){  alert( "用户名不能为空!"); return false; }
+     //   if (input_pwd.value ==""){  alert( "密码不能为空!"); return false; }
+        var md5_pwd= document.getElementById('md5_pwd');
+        md5_pwd.value="";
+        md5_pwd.value= stringToHex(input_pwd.value);
+        $("#md5_pwd").val( stringToHex(input_pwd.value));
+        return true;
+        //进行下一步
+
+    }
+
+    function stringToHex(str){
+        var bytesT = [];
+        for(var i = 0; i < str.length; i++){
+            bytesT.push(str.charCodeAt(i).toString(16));
+        }
+        return bytesT;
+    }
+
+
+
+</script>
+
+
+
+
+<svg id="SvgjsSvg1001" width="2" height="0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" style="overflow: hidden; top: -100%; left: -100%; position: absolute; opacity: 0;"><defs id="SvgjsDefs1002"></defs><polyline id="SvgjsPolyline1003" points="0,0"></polyline><path id="SvgjsPath1004" d="M0 0 "></path></svg></body></html>

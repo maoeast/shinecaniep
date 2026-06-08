@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>资源中心综合评价管理平台</title>
+    <title>送教上门AI成长智联推进系统</title>
     <link rel="stylesheet" href="src/css/tailwind.min.css">
     <link rel="stylesheet" href="src/css/all.min.css">
     
@@ -2755,7 +2755,7 @@
                             <label>预设系统名称</label>
                             <select id="settingPresetSystem">
                                 <option value="">-- 选择预设或自定义 --</option>
-                                <option value="iep">资源教室管理系统-IEP</option>
+                                <option value="iep">送教上门AI成长智联推进系统</option>
                                 <option value="inclusive">资源中心融合教育管理平台</option>
                                 <option value="homeedu">送教上门成长智联推进系统</option>
                                 <option value="assessment">特校资源中心综合教学评估及干预平台</option>
@@ -2899,8 +2899,8 @@
                     <div class="w-full max-w-lg z-10" style="position: relative; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
                         <!-- 标题区域 -->
                         <div class="mb-10 w-full max-w-none text-center">
-                            <h1 id="systemNameDisplayTech" class="sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-wide gradient-title">资源教室管理系统-IEP</h1>
-                            <p id="systemNameEnTech" class="mt-4 text-sm text-cyan-200/80 tracking-widest">IEP Resource Room Management System</p>
+                            <h1 id="systemNameDisplayTech" class="sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-wide gradient-title">送教上门AI成长智联推进系统</h1>
+                            <p id="systemNameEnTech" class="mt-4 text-sm text-cyan-200/80 tracking-widest">Al-Powered Home-Visit Education and Integrated Growth Support System</p>
                         </div>
                         
                         <!-- 悬浮卡片区域 -->
@@ -2977,8 +2977,8 @@
                             <div class="logo-circle">
                                 <i class="fas fa-graduation-cap"></i>
                             </div>
-                            <h1 id="systemNameDisplayWave" class="text-4xl md:text-5xl font-bold wave-gradient-title">资源教室管理系统-IEP</h1>
-                            <p id="systemNameEnWave" class="mt-3 text-white/70 tracking-wider">IEP Resource Room Management System</p>
+                            <h1 id="systemNameDisplayWave" class="text-4xl md:text-5xl font-bold wave-gradient-title">送教上门AI成长智联推进系统</h1>
+                            <p id="systemNameEnWave" class="mt-3 text-white/70 tracking-wider">Al-Powered Home-Visit Education and Integrated Growth Support System</p>
                         </div>
                         
                         <!-- 波浪卡片区域 -->
@@ -3032,7 +3032,7 @@
                             <i class="fas fa-graduation-cap"></i>
                         </div>
                         <h2>欢迎登录</h2>
-                        <p id="loginSubtitle">资源教室管理系统-IEP</p>
+                        <p id="loginSubtitle">送教上门AI成长智联推进系统</p>
                     </div>
                     
                     <form id="loginForm" method="post" action="https://xcpm.hzxckj308.com:8008/users.html?action=login">
@@ -3070,7 +3070,7 @@
                         <div id="errorMessage" class="login-error"></div>
                         
                         <div class="copyright">
-                            <span id="copyrightText">杭州炫灿科技有限公司</span>
+                            <span id="copyrightText">黑龙江国众科技有限公司</span>
                         </div>
                     </form>
                 </div>
@@ -3473,8 +3473,8 @@
     // 预设系统名称配置
     const systemPresets = {
         iep: {
-            name: "资源教室管理系统-IEP",
-            nameEn: "IEP Resource Room Management System"
+            name: "送教上门AI成长智联推进系统",
+            nameEn: "Al-Powered Home-Visit Education and Integrated Growth Support System"
         },
         inclusive: {
             name: "资源中心融合教育管理平台",
@@ -3507,11 +3507,11 @@
     };
 
     const defaultConfig = {
-        systemName: "资源教室管理系统-IEP",
-        systemNameEn: "IEP Resource Room Management System",
+        systemName: "送教上门AI成长智联推进系统",
+        systemNameEn: "Al-Powered Home-Visit Education and Integrated Growth Support System",
         loadingText: "系统加载中",
         logoUrl: "",
-        copyright: "杭州炫灿科技有限公司",
+        copyright: "黑龙江国众科技有限公司",
         backgroundUrl: "",
         theme: "tech",
         bgOpacity: 30,
@@ -3714,11 +3714,11 @@
             // 更新英文名称
             const systemNameEnTech = document.getElementById('systemNameEnTech');
             if (systemNameEnTech) {
-                systemNameEnTech.textContent = currentConfig.systemNameEn || 'IEP Resource Room Management System';
+                systemNameEnTech.textContent = currentConfig.systemNameEn || 'Al-Powered Home-Visit Education and Integrated Growth Support System';
             }
             const systemNameEnWave = document.getElementById('systemNameEnWave');
             if (systemNameEnWave) {
-                systemNameEnWave.textContent = currentConfig.systemNameEn || 'IEP Resource Room Management System';
+                systemNameEnWave.textContent = currentConfig.systemNameEn || 'Al-Powered Home-Visit Education and Integrated Growth Support System';
             }
             
             // 更新科技感主题卡片内容

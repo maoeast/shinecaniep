@@ -542,7 +542,7 @@ fn main() {
             toggle_devtools,
         ])
         .setup(|app| {
-            println!("资源教室管理系统-IEP 已启动");
+            println!("送教上门AI成长智联推进系统 已启动");
 
             // 确保应用数据目录存在
             match app.path().app_data_dir() {
@@ -607,7 +607,7 @@ fn main() {
             };
 
             WebviewWindowBuilder::new(app, "main", url)
-                .title("ShineCanIEP")
+                .title("送教上门AI成长智联推进系统")
                 .inner_size(1400.0, 800.0)
                 .min_inner_size(1024.0, 768.0)
                 .center()

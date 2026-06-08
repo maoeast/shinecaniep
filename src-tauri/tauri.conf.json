@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0-rc",
-  "productName": "资源教室管理系统-IEP",
+  "productName": "送教上门AI成长智联推进系统",
   "version": "1.0.2",
   "identifier": "com.shinecaniep.app",
   "build": {
@@ -24,7 +24,7 @@
   "bundle": {
     "active": true,
     "category": "DeveloperTool",
-    "copyright": "",
+    "copyright": "黑龙江国众科技有限公司",
     "targets": ["nsis"],
     "externalBin": [],
     "resources": [],

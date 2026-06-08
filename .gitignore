@@ -1,0 +1,10 @@
+# Claude Code local config
+.claude/
+
+# Rust build output
+src-tauri/target/
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store

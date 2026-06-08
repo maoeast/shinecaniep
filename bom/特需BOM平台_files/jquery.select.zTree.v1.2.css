@@ -1,0 +1,230 @@
+.select_ztree_hidden {
+    border: 0 !important;
+    clip: rect(0 0 0 0) !important;
+    -webkit-clip-path: inset(50%) !important;
+    clip-path: inset(50%) !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    width: 1px !important;
+    white-space: nowrap !important
+}
+
+.select_ztree {
+    position: relative;
+    min-width: 120px;
+    background-color: #fff;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    overflow: hidden;
+    display: inline-block;
+    height: 45px
+}
+
+.select_ztree input {
+    display: block;
+    padding-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #444;
+    border: 0;
+    outline: 0;
+    height: 100%;
+    width: calc(100% - 20px);
+    cursor: pointer;
+    box-sizing: border-box
+}
+
+.select_ztree .tag {
+    height: 28px;
+    position: absolute;
+    top: 0;
+    right: 1px;
+    width: 20px
+}
+
+.select_ztree .tag b {
+    border-color: #888 transparent transparent transparent;
+    border-style: solid;
+    border-width: 5px 4px 0 4px;
+    height: 0;
+    left: 50%;
+    margin-left: -4px;
+    margin-top: -2px;
+    position: absolute;
+    top: 50%;
+    width: 0
+}
+
+.select_ztree .tag b.selected {
+    border-color: transparent transparent #888 transparent;
+    border-width: 0 4px 5px 4px
+}
+
+.select_ztree_container {
+    position: absolute;
+    top: 200px;
+    left: 20px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    width: auto;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 5px;
+    background-color: white;
+    z-index: 11111;
+    outline: none;
+}
+
+.select_ztree_search {
+    width: 100%;
+    height: 28px;
+    margin-bottom: 5px
+}
+
+.select_ztree_container .hide {
+    display: block;
+    height: 0;
+    margin-bottom: 0;
+}
+
+.select_ztree_search input {
+    padding: 4px;
+    width: 100%;
+    box-sizing: border-box
+}
+
+.select_ztree_container .hide input {
+    height: 0;
+    padding: 0;
+    border: none;
+}
+
+.select_ztree_list {
+    height: auto;
+    max-height: 300px;
+    overflow-x: hidden;
+    overflow-y: auto
+}
+
+.select_ztree_container .ztree {
+    padding: 0
+}
+
+.select_ztree_container .ztree * {
+    font-size: 10pt
+}
+
+.select_ztree_container .ztree li ul {
+    margin: 0;
+    padding: 0
+}
+
+.select_ztree_container .ztree li {
+    line-height: 30px;
+    width: auto
+}
+
+.select_ztree_container .ztree li a {
+    width: 100%;
+    height: 30px;
+    padding-top: 0
+}
+
+.select_ztree_container .ztree li a:hover {
+    text-decoration: none;
+    background-color: #e7e7e7
+}
+
+.select_ztree_container .ztree.showIcon li a span.button.switch {
+    visibility: visible
+}
+
+.select_ztree_container .ztree li a.curSelectedNode {
+    background-color: #d4d4d4;
+    border: 0;
+    height: 30px
+}
+
+.select_ztree_container .ztree li span {
+    line-height: 30px
+}
+
+.select_ztree_container .ztree li span.button {
+    margin-top: -7px
+}
+
+.select_ztree_container .ztree li span.button.switch {
+    width: 16px;
+    height: 16px
+}
+
+.select_ztree_container .ztree li a.level0 span {
+    font-size: 120%;
+    font-weight: bold
+}
+
+.select_ztree_container .ztree li span.button {
+    position: relative;
+    background-image: none
+}
+
+.select_ztree_container .ztree li span.button.switch:after {
+    content: ' ';
+    position: absolute;
+    border-color: transparent transparent transparent #888;
+    border-style: solid;
+    border-width: 7px 0 6px 6px;
+    height: 0;
+    left: 50%;
+    margin-left: -3px;
+    margin-top: -4px;
+    top: 50%;
+    width: 0
+}
+
+.select_ztree_container .ztree li span.button.switch.level0 {
+    width: 20px;
+    height: 20px
+}
+
+.select_ztree_container .ztree li span.button.switch.level0:after {
+    border-width: 7px 0 6px 6px
+}
+
+.select_ztree_container .ztree li span.button.switch.level1 {
+    width: 20px;
+    height: 20px
+}
+
+.select_ztree_container .ztree li span.button.switch.level1:after {
+    border-width: 5px 0 4px 4px;
+    margin-left: -2px
+}
+
+.select_ztree_container .ztree li span.button.switch.noline_open:after {
+    border-color: #888 transparent transparent transparent;
+    border-width: 5px 4px 0 4px;
+    margin-top: -1px;
+    margin-left: -4px
+}
+
+.select_ztree_container .ztree li span.button.noline_close:after {
+    border-width: 5px 0 4px 4px;
+    margin-left: -2px
+}
+
+.select_ztree_container .ztree li span.button.noline_open.level0:after {
+    border-color: #888 transparent transparent transparent;
+    border-width: 7px 6px 0 6px;
+    margin-top: -1px;
+    margin-left: -6px
+}
+
+.select_ztree_container .ztree li span.button.noline_docu:after {
+    border-color: transparent
+}
