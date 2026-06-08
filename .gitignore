@@ -8,3 +8,9 @@ src-tauri/target/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Android build artifacts
+src-tauri/gen/android/.gradle/
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/build/
+src-tauri/gen/android/local.properties

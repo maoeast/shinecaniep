@@ -3,10 +3,12 @@
  * 一键打包脚本
  *
  * 用法：
- *   node build.js <中文名称> <英文名称> <版本号>
+ *   node build.js <中文名称> <英文名称> <版本号> [--platform windows|android] [copyright] [logo路径]
  *
  * 示例：
  *   node build.js "认知评估与训练仪" "Cognitive Assessment and Training" "1.0.2"
+ *   node build.js "认知评估与训练仪" "Cognitive Assessment and Training" "1.0.2" --platform android
+ *   node build.js "认知评估与训练仪" "Cognitive Assessment and Training" "1.0.2" --platform windows "杭州炫灿科技有限公司"
  *
  * 会自动同步到以下文件的所有相关位置：
  *   - src-tauri/tauri.conf.json  (productName, version)
@@ -25,13 +27,29 @@ const { execSync } = require('child_process');
 // =============================================
 //   参数解析
 // =============================================
-const args = process.argv.slice(2);
+const rawArgs = process.argv.slice(2);
+
+// 解析 --platform 参数
+let platform = 'windows';
+const platformIndex = rawArgs.indexOf('--platform');
+if (platformIndex !== -1 && rawArgs[platformIndex + 1]) {
+  platform = rawArgs[platformIndex + 1];
+  rawArgs.splice(platformIndex, 2); // 移除 --platform 和它的值
+}
+
+if (!['windows', 'android'].includes(platform)) {
+  console.error(`❌ 不支持的平台: "${platform}"，请使用 windows 或 android`);
+  process.exit(1);
+}
+
+const args = rawArgs;
 
 if (args.length < 3) {
-  console.log('用法: node build.js <中文名称> <英文名称> <版本号> [copyright] [logo路径]');
+  console.log('用法: node build.js <中文名称> <英文名称> <版本号> [--platform windows|android] [copyright] [logo路径]');
   console.log('');
   console.log('示例:');
   console.log('  node build.js "认知评估与训练仪" "Cognitive Assessment and Training" "1.0.2"');
+  console.log('  node build.js "认知评估与训练仪" "Cognitive Assessment and Training" "1.0.2" --platform android');
   console.log('  node build.js "认知评估与训练仪" "Cognitive Assessment and Training" "1.0.2" "杭州炫灿科技有限公司"');
   process.exit(1);
 }
@@ -55,6 +73,7 @@ console.log('========================================');
 console.log(`  中文名: ${SYSTEM_NAME}`);
 console.log(`  英文名: ${SYSTEM_NAME_EN}`);
 console.log(`  版本号: ${VERSION}`);
+console.log(`  平台:   ${platform}`);
 if (COPYRIGHT) console.log(`  copyright: ${COPYRIGHT}`);
 console.log('========================================\n');
 
@@ -192,18 +211,25 @@ function updateDistIndexTitle() {
 }
 
 // =============================================
-//   6. 执行 cargo tauri build
+//   6. 执行编译打包
 // =============================================
 function buildTauri() {
   console.log('\n========================================');
-  console.log('  开始编译打包 ...');
+  console.log(`  开始编译打包 (平台: ${platform}) ...`);
   console.log('========================================\n');
 
   const cargoDir = path.join(ROOT, 'src-tauri');
-  execSync('cargo tauri build', {
+  const buildCmd = platform === 'android'
+    ? 'cargo tauri android build'
+    : 'cargo tauri build';
+  const timeout = platform === 'android'
+    ? 30 * 60 * 1000   // Android 30 分钟超时
+    : 10 * 60 * 1000;  // Windows 10 分钟超时
+
+  execSync(buildCmd, {
     cwd: cargoDir,
     stdio: 'inherit',
-    timeout: 10 * 60 * 1000,  // 10 分钟超时
+    timeout,
   });
 }
 
@@ -220,17 +246,22 @@ try {
   console.log('\n✅ 所有配置已同步，开始打包...\n');
   buildTauri();
 
-  // 计算输出路径
-  const exeName = `${SYSTEM_NAME}.exe`;
-  const setupName = `${SYSTEM_NAME}_${VERSION}_x64-setup.exe`;
-  const releaseDir = path.join(ROOT, 'src-tauri', 'target', 'release');
-  const nsisDir = path.join(releaseDir, 'bundle', 'nsis');
-
   console.log('\n========================================');
   console.log('  ✅ 打包完成！');
   console.log('========================================');
-  console.log(`  可执行文件: ${path.join(releaseDir, exeName)}`);
-  console.log(`  安装包:     ${path.join(nsisDir, setupName)}`);
+
+  if (platform === 'android') {
+    const apkBase = path.join(ROOT, 'src-tauri', 'gen', 'android', 'app', 'build', 'outputs', 'apk');
+    console.log(`  APK (debug):   ${path.join(apkBase, 'universal', 'debug', 'app-universal-debug.apk')}`);
+    console.log(`  APK (release): ${path.join(apkBase, 'universal', 'release', 'app-universal-release.apk')}`);
+  } else {
+    const exeName = `${SYSTEM_NAME}.exe`;
+    const setupName = `${SYSTEM_NAME}_${VERSION}_x64-setup.exe`;
+    const releaseDir = path.join(ROOT, 'src-tauri', 'target', 'release');
+    const nsisDir = path.join(releaseDir, 'bundle', 'nsis');
+    console.log(`  可执行文件: ${path.join(releaseDir, exeName)}`);
+    console.log(`  安装包:     ${path.join(nsisDir, setupName)}`);
+  }
   console.log('========================================');
 } catch (err) {
   console.error('\n❌ 出错：', err.message);

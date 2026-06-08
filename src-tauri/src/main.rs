@@ -8,6 +8,10 @@ use tauri_plugin_dialog::DialogExt;
 /// 应用配置结构体（通用 JSON，不限定字段）
 pub type AppConfig = serde_json::Value;
 
+// =============================================
+//   桌面专属：快捷方式图标（Android 上不需要）
+// =============================================
+#[cfg(not(target_os = "android"))]
 const BUILTIN_SHORTCUT_ICONS: &[(&str, &[u8])] = &[
     ("AI.ico", include_bytes!("../../dist/src/icon/AI.ico")),
     ("app.ico", include_bytes!("../../dist/src/icon/app.ico")),
@@ -19,6 +23,7 @@ const BUILTIN_SHORTCUT_ICONS: &[(&str, &[u8])] = &[
     ("xqkf.ico", include_bytes!("../../dist/src/icon/xqkf.ico")),
 ];
 
+#[cfg(not(target_os = "android"))]
 fn ensure_builtin_shortcut_icons(icon_dir: &Path) -> Result<(), String> {
     if !icon_dir.exists() {
         std::fs::create_dir_all(icon_dir)
@@ -38,26 +43,27 @@ fn ensure_builtin_shortcut_icons(icon_dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// 获取 exe 所在目录的 config.json 路径
-fn get_config_path() -> Result<PathBuf, String> {
-    let exe_path = std::env::current_exe()
-        .map_err(|e| format!("无法获取 exe 路径: {}", e))?;
-    let exe_dir = exe_path.parent()
-        .ok_or("无法获取 exe 所在目录")?;
-    Ok(exe_dir.join("config.json"))
+// =============================================
+//   配置文件路径（跨平台：使用 app_data_dir）
+// =============================================
+
+/// 获取 config.json 路径（使用 Tauri app_data_dir，跨平台兼容）
+fn get_config_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let app_dir = app.path().app_data_dir()
+        .map_err(|e| format!("无法获取应用数据目录: {}", e))?;
+    Ok(app_dir.join("config.json"))
 }
 
-/// 获取 exe 所在目录
+/// 获取应用数据目录
 #[tauri::command]
-fn get_app_dir() -> Result<String, String> {
-    let exe_path = std::env::current_exe()
-        .map_err(|e| format!("无法获取 exe 路径: {}", e))?;
-    let exe_dir = exe_path.parent()
-        .ok_or("无法获取 exe 所在目录")?;
-    Ok(exe_dir.to_string_lossy().to_string())
+fn get_app_dir(app: tauri::AppHandle) -> Result<String, String> {
+    let app_dir = app.path().app_data_dir()
+        .map_err(|e| format!("无法获取应用数据目录: {}", e))?;
+    Ok(app_dir.to_string_lossy().to_string())
 }
 
-/// 获取 exe 完整路径
+/// 获取 exe 完整路径 (desktop only)
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 fn get_exe_path() -> Result<String, String> {
     let exe_path = std::env::current_exe()
@@ -65,10 +71,20 @@ fn get_exe_path() -> Result<String, String> {
     Ok(exe_path.to_string_lossy().to_string())
 }
 
-/// 读取配置文件（exe 同目录下的 config.json）
+#[cfg(target_os = "android")]
 #[tauri::command]
-fn read_config() -> Result<serde_json::Value, String> {
-    let config_path = get_config_path()?;
+fn get_exe_path() -> Result<String, String> {
+    Err("此功能在移动端不可用".to_string())
+}
+
+// =============================================
+//   配置文件读写（跨平台）
+// =============================================
+
+/// 读取配置文件
+#[tauri::command]
+fn read_config(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
+    let config_path = get_config_path(&app)?;
 
     if !config_path.exists() {
         return Ok(serde_json::Value::Null);
@@ -83,19 +99,28 @@ fn read_config() -> Result<serde_json::Value, String> {
     Ok(config)
 }
 
-/// 写入配置文件（exe 同目录下的 config.json）
+/// 写入配置文件
 #[tauri::command]
-fn write_config(config: serde_json::Value) -> Result<(), String> {
-    let config_path = get_config_path()?;
+fn write_config(app: tauri::AppHandle, config: serde_json::Value) -> Result<(), String> {
+    let config_path = get_config_path(&app)?;
 
     let content = serde_json::to_string_pretty(&config)
         .map_err(|e| format!("序列化配置失败: {}", e))?;
+
+    // 确保目录存在
+    if let Some(parent) = config_path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
 
     std::fs::write(&config_path, content)
         .map_err(|e| format!("写入配置文件失败: {}", e))?;
 
     Ok(())
 }
+
+// =============================================
+//   文件对话框（跨平台，使用 tauri-plugin-dialog）
+// =============================================
 
 /// 选择文件对话框
 #[tauri::command]
@@ -144,7 +169,11 @@ async fn select_save_dialog(
     Ok(file_path.map(|p| p.to_string()))
 }
 
-/// 执行外部命令（用于调用 Python 脚本）
+// =============================================
+//   执行外部命令（desktop only）
+// =============================================
+
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 async fn execute_command(command: String, args: Vec<String>) -> Result<String, String> {
     use std::process::Command;
@@ -163,6 +192,16 @@ async fn execute_command(command: String, args: Vec<String>) -> Result<String, S
 
     Ok(stdout)
 }
+
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn execute_command(_command: String, _args: Vec<String>) -> Result<String, String> {
+    Err("此功能在移动端不可用".to_string())
+}
+
+// =============================================
+//   文件操作（跨平台）
+// =============================================
 
 /// 检查文件是否存在
 #[tauri::command]
@@ -184,7 +223,11 @@ fn write_file(path: String, content: String) -> Result<(), String> {
         .map_err(|e| format!("写入文件失败: {}", e))
 }
 
-/// 获取桌面路径
+// =============================================
+//   桌面路径（desktop only）
+// =============================================
+
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 async fn get_desktop_path() -> Result<String, String> {
     use std::process::Command;
@@ -205,7 +248,16 @@ async fn get_desktop_path() -> Result<String, String> {
     Ok(path)
 }
 
-/// 获取系统信息
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn get_desktop_path() -> Result<String, String> {
+    Err("此功能在移动端不可用".to_string())
+}
+
+// =============================================
+//   系统信息（跨平台）
+// =============================================
+
 #[tauri::command]
 fn get_system_info() -> serde_json::Value {
     use std::env;
@@ -217,7 +269,11 @@ fn get_system_info() -> serde_json::Value {
     })
 }
 
-/// 创建快捷方式（跨平台）
+// =============================================
+//   快捷方式创建（desktop only）
+// =============================================
+
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 async fn create_shortcut(
     _app: tauri::AppHandle,
@@ -236,7 +292,20 @@ async fn create_shortcut(
     }
 }
 
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn create_shortcut(
+    _app: tauri::AppHandle,
+    _name: String,
+    _target: String,
+    _icon_path: Option<String>,
+    _output_dir: String,
+) -> Result<String, String> {
+    Err("此功能在移动端不可用".to_string())
+}
+
 /// 创建 Windows 快捷方式
+#[cfg(not(target_os = "android"))]
 fn create_windows_shortcut(
     name: &str,
     target: &str,
@@ -245,7 +314,6 @@ fn create_windows_shortcut(
 ) -> Result<String, String> {
     use std::process::Command;
 
-    // 使用 PowerShell 创建快捷方式
     let shortcut_path = format!("{}\\{}.lnk", output_dir, name);
 
     let icon_line = icon_path
@@ -289,11 +357,9 @@ fn create_macos_shortcut(
     let contents_path = format!("{}/Contents", app_path);
     let macos_path = format!("{}/MacOS", contents_path);
 
-    // 创建目录结构
     std::fs::create_dir_all(&macos_path)
         .map_err(|e| format!("创建应用目录失败: {}", e))?;
 
-    // 创建启动脚本
     let script_content = format!(
         r#"#!/bin/bash
 open "{}"
@@ -305,7 +371,6 @@ open "{}"
     std::fs::write(&script_path, script_content)
         .map_err(|e| format!("写入启动脚本失败: {}", e))?;
 
-    // 设置执行权限
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -317,7 +382,6 @@ open "{}"
             .map_err(|e| format!("设置文件权限失败: {}", e))?;
     }
 
-    // 创建 Info.plist
     let plist_content = format!(
         r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -341,7 +405,6 @@ open "{}"
     std::fs::write(format!("{}/Info.plist", contents_path), plist_content)
         .map_err(|e| format!("写入 Info.plist 失败: {}", e))?;
 
-    // 复制图标（如果提供）
     if let Some(icon) = icon_path {
         let icon_dest = format!("{}/AppIcon.icns", contents_path);
         std::fs::copy(icon, &icon_dest)
@@ -375,7 +438,6 @@ Terminal=false
     std::fs::write(&desktop_path, desktop_content)
         .map_err(|e| format!("写入 .desktop 文件失败: {}", e))?;
 
-    // 设置执行权限
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -390,7 +452,10 @@ Terminal=false
     Ok(desktop_path)
 }
 
-/// WebView 导航命令 - 后退
+// =============================================
+//   WebView 导航命令（跨平台）
+// =============================================
+
 #[tauri::command]
 fn webview_go_back(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
@@ -399,7 +464,6 @@ fn webview_go_back(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// WebView 导航命令 - 前进
 #[tauri::command]
 fn webview_go_forward(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
@@ -408,7 +472,6 @@ fn webview_go_forward(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// WebView 导航命令 - 刷新
 #[tauri::command]
 fn webview_reload(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
@@ -417,7 +480,11 @@ fn webview_reload(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// 打开/关闭 DevTools
+// =============================================
+//   DevTools（desktop only，Android 端空操作）
+// =============================================
+
+#[cfg(not(target_os = "android"))]
 #[tauri::command]
 fn toggle_devtools(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
@@ -430,6 +497,17 @@ fn toggle_devtools(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(target_os = "android")]
+#[tauri::command]
+fn toggle_devtools(_app: tauri::AppHandle) -> Result<(), String> {
+    // DevTools not available on Android WebView
+    Ok(())
+}
+
+// =============================================
+//   JS 注入常量（跨平台）
+// =============================================
+
 /// 注入到服务器页面的导航栏 JS（纯 JS，无外部依赖）
 const NAV_BAR_JS: &str = r#"
 (function() {
@@ -440,9 +518,9 @@ const NAV_BAR_JS: &str = r#"
     nav.style.cssText = 'position:fixed;bottom:30px;right:30px;display:flex;gap:12px;z-index:2147483647;padding:10px 16px;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.2);opacity:0.4;transform:scale(0.9);transition:all 0.3s ease;';
 
     var btns = [
-        { id:'nav-back', label:'\u25C0', title:'返回', action:'window.history.back()' },
-        { id:'nav-forward', label:'\u25B6', title:'前进', action:'window.history.forward()' },
-        { id:'nav-refresh', label:'\u21BB', title:'刷新', action:'window.location.reload()' }
+        { id:'nav-back', label:'◀', title:'返回', action:'window.history.back()' },
+        { id:'nav-forward', label:'▶', title:'前进', action:'window.history.forward()' },
+        { id:'nav-refresh', label:'↻', title:'刷新', action:'window.location.reload()' }
     ];
 
     btns.forEach(function(b) {
@@ -517,6 +595,10 @@ const DIRECT_DOWNLOAD_LINK_JS: &str = r#"
 })();
 "#;
 
+// =============================================
+//   main()
+// =============================================
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -545,134 +627,144 @@ fn main() {
             println!("送教上门AI成长智联推进系统 已启动");
 
             // 确保应用数据目录存在
-            match app.path().app_data_dir() {
-                Ok(app_dir) => {
-                    if !app_dir.exists() {
-                        let _ = std::fs::create_dir_all(&app_dir);
-                    }
-                    println!("应用数据目录: {:?}", app_dir);
-                }
-                Err(e) => {
-                    println!("无法获取应用数据目录: {}", e);
-                }
+            let app_dir = app.path().app_data_dir()
+                .expect("无法获取应用数据目录");
+            if !app_dir.exists() {
+                let _ = std::fs::create_dir_all(&app_dir);
+            }
+            println!("应用数据目录: {:?}", app_dir);
+
+            // 将 config.json 复制到应用数据目录（仅首次安装时）
+            let target_config = app_dir.join("config.json");
+            if !target_config.exists() {
+                let config_content = include_str!("../../dist/config.json");
+                let _ = std::fs::write(&target_config, config_content);
+                println!("[Setup] 已复制 config.json 到应用数据目录");
             }
 
-            // 将 config.json 和 icon 文件夹复制到 exe 旁边（仅首次安装时）
-            if let Ok(exe_path) = std::env::current_exe() {
-                if let Some(exe_dir) = exe_path.parent() {
-                    // config.json
-                    let target_config = exe_dir.join("config.json");
-                    if !target_config.exists() {
-                        let config_content = include_str!("../../dist/config.json");
-                        let _ = std::fs::write(&target_config, config_content);
-                        println!("[Setup] 已复制 config.json 到 exe 目录");
-                    }
-
-                    // icon 文件夹
-                    let icon_dir = exe_dir.join("icon");
-                    if !icon_dir.exists() {
-                        let _ = std::fs::create_dir_all(&icon_dir);
-                        let icons: &[(&str, &[u8])] = &[
-                            ("AI.ico", include_bytes!("../../dist/src/icon/AI.ico")),
-                            ("app.ico", include_bytes!("../../dist/src/icon/app.ico")),
-                            ("app2.ico", include_bytes!("../../dist/src/icon/app2.ico")),
-                            ("app4.ico", include_bytes!("../../dist/src/icon/app4.ico")),
-                            ("book.ico", include_bytes!("../../dist/src/icon/book.ico")),
-                            ("icon.ico", include_bytes!("../../dist/src/icon/icon.ico")),
-                            ("math.ico", include_bytes!("../../dist/src/icon/math.ico")),
-                            ("xqkf.ico", include_bytes!("../../dist/src/icon/xqkf.ico")),
-                        ];
-                        for (name, data) in icons {
-                            let _ = std::fs::write(icon_dir.join(name), data);
+            // 桌面端：复制 icon 文件夹和确保快捷方式图标
+            #[cfg(not(target_os = "android"))]
+            {
+                // 复制 icon 文件夹到 exe 旁边（快捷方式图标需要）
+                if let Ok(exe_path) = std::env::current_exe() {
+                    if let Some(exe_dir) = exe_path.parent() {
+                        let icon_dir = exe_dir.join("icon");
+                        if !icon_dir.exists() {
+                            let _ = std::fs::create_dir_all(&icon_dir);
+                            let icons: &[(&str, &[u8])] = &[
+                                ("AI.ico", include_bytes!("../../dist/src/icon/AI.ico")),
+                                ("app.ico", include_bytes!("../../dist/src/icon/app.ico")),
+                                ("app2.ico", include_bytes!("../../dist/src/icon/app2.ico")),
+                                ("app4.ico", include_bytes!("../../dist/src/icon/app4.ico")),
+                                ("book.ico", include_bytes!("../../dist/src/icon/book.ico")),
+                                ("icon.ico", include_bytes!("../../dist/src/icon/icon.ico")),
+                                ("math.ico", include_bytes!("../../dist/src/icon/math.ico")),
+                                ("xqkf.ico", include_bytes!("../../dist/src/icon/xqkf.ico")),
+                            ];
+                            for (name, data) in icons {
+                                let _ = std::fs::write(icon_dir.join(name), data);
+                            }
+                            println!("[Setup] 已复制 icon 文件夹到 exe 目录");
                         }
-                        println!("[Setup] 已复制 icon 文件夹到 exe 目录");
+
+                        if let Err(error) = ensure_builtin_shortcut_icons(&icon_dir) {
+                            println!("[Setup] 同步内置 icon 失败: {}", error);
+                        }
                     }
                 }
             }
 
-            // 程序化创建主窗口
-            if let Ok(exe_path) = std::env::current_exe() {
-                if let Some(exe_dir) = exe_path.parent() {
-                    let icon_dir = exe_dir.join("icon");
-                    if let Err(error) = ensure_builtin_shortcut_icons(&icon_dir) {
-                        println!("[Setup] 鍚屾鍐呯疆 icon 鏂囦欢澶辫触: {}", error);
-                    }
-                }
-            }
-
+            // 创建主窗口
             let url = if cfg!(debug_assertions) {
                 WebviewUrl::External("http://localhost:1420".parse().unwrap())
             } else {
                 WebviewUrl::App("index.html".into())
             };
 
-            WebviewWindowBuilder::new(app, "main", url)
+            let mut builder = WebviewWindowBuilder::new(app, "main", url)
                 .title("送教上门AI成长智联推进系统")
-                .inner_size(1400.0, 800.0)
-                .min_inner_size(1024.0, 768.0)
-                .center()
-                .resizable(true)
-                .on_download(|webview, event| {
-                    match event {
-                        tauri::webview::DownloadEvent::Requested { url, destination } => {
-                            let is_target_download = url.host_str() == Some("xcpm.hzxckj308.com")
-                                && url.path().to_ascii_lowercase().contains("/filemould/");
+                .resizable(true);
 
-                            if !is_target_download {
-                                return true;
-                            }
+            // 桌面端：设置窗口大小
+            #[cfg(not(target_os = "android"))]
+            {
+                builder = builder
+                    .inner_size(1400.0, 800.0)
+                    .min_inner_size(1024.0, 768.0)
+                    .center();
+            }
 
-                            let suggested_name = destination
-                                .file_name()
-                                .and_then(|name| name.to_str())
-                                .filter(|name| !name.is_empty())
-                                .map(|name| name.to_string())
-                                .or_else(|| {
-                                    url.path_segments()
-                                        .and_then(|mut segments| segments.next_back())
-                                        .filter(|name| !name.is_empty())
-                                        .map(|name| name.to_string())
-                                })
-                                .unwrap_or_else(|| "download".to_string());
+            // 下载处理：桌面端使用 rfd 文件对话框，Android 端自动处理
+            #[cfg(not(target_os = "android"))]
+            let builder = builder.on_download(|webview, event| {
+                match event {
+                    tauri::webview::DownloadEvent::Requested { url, destination } => {
+                        let is_target_download = url.host_str() == Some("xcpm.hzxckj308.com")
+                            && url.path().to_ascii_lowercase().contains("/filemould/");
 
-                            let mut dialog = rfd::FileDialog::new()
-                                .set_title("保存下载文件")
-                                .set_file_name(&suggested_name);
-
-                            if let Some(parent) = destination.parent() {
-                                dialog = dialog.set_directory(parent);
-                            }
-
-                            if let Some(path) = dialog.save_file() {
-                                *destination = path;
-                                true
-                            } else {
-                                false
-                            }
+                        if !is_target_download {
+                            return true;
                         }
-                        tauri::webview::DownloadEvent::Finished { url, path, success } => {
-                            let is_target_download = url.host_str() == Some("xcpm.hzxckj308.com")
-                                && url.path().to_ascii_lowercase().contains("/filemould/");
 
-                            if is_target_download && success {
-                                let message = if let Some(path) = path {
-                                    format!("文件已下载到:\n{}", path.display())
-                                } else {
-                                    "文件下载完成。".to_string()
-                                };
+                        let suggested_name = destination
+                            .file_name()
+                            .and_then(|name| name.to_str())
+                            .filter(|name| !name.is_empty())
+                            .map(|name| name.to_string())
+                            .or_else(|| {
+                                url.path_segments()
+                                    .and_then(|mut segments| segments.next_back())
+                                    .filter(|name| !name.is_empty())
+                                    .map(|name| name.to_string())
+                            })
+                            .unwrap_or_else(|| "download".to_string());
 
-                                webview
-                                    .app_handle()
-                                    .dialog()
-                                    .message(message)
-                                    .title("下载完成")
-                                    .show(|_| {});
-                            }
+                        let mut dialog = rfd::FileDialog::new()
+                            .set_title("保存下载文件")
+                            .set_file_name(&suggested_name);
+
+                        if let Some(parent) = destination.parent() {
+                            dialog = dialog.set_directory(parent);
+                        }
+
+                        if let Some(path) = dialog.save_file() {
+                            *destination = path;
                             true
+                        } else {
+                            false
                         }
-                        _ => true,
                     }
-                })
+                    tauri::webview::DownloadEvent::Finished { url, path, success } => {
+                        let is_target_download = url.host_str() == Some("xcpm.hzxckj308.com")
+                            && url.path().to_ascii_lowercase().contains("/filemould/");
+
+                        if is_target_download && success {
+                            let message = if let Some(path) = path {
+                                format!("文件已下载到:\n{}", path.display())
+                            } else {
+                                "文件下载完成。".to_string()
+                            };
+
+                            webview
+                                .app_handle()
+                                .dialog()
+                                .message(message)
+                                .title("下载完成")
+                                .show(|_| {});
+                        }
+                        true
+                    }
+                    _ => true,
+                }
+            });
+
+            #[cfg(target_os = "android")]
+            let builder = builder.on_download(|_webview, _event| {
+                // Android 端由系统 WebView 自动处理下载
+                true
+            });
+
+            builder
                 .on_page_load(|window, payload| {
                     if payload.event() == tauri::webview::PageLoadEvent::Finished {
                         let url = payload.url();
@@ -702,6 +794,11 @@ fn main() {
         .expect("error while running tauri application");
 }
 
+// =============================================
+//   测试（desktop only）
+// =============================================
+
+#[cfg(not(target_os = "android"))]
 #[cfg(test)]
 mod tests {
     use super::{ensure_builtin_shortcut_icons, BUILTIN_SHORTCUT_ICONS};
