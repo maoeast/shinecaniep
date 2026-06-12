@@ -24,7 +24,7 @@
   "bundle": {
     "active": true,
     "category": "DeveloperTool",
-    "copyright": "黑龙江国众科技有限公司",
+    "copyright": "杭州炫灿科技有限公司",
     "targets": ["nsis"],
     "externalBin": [],
     "resources": [],

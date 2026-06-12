@@ -14,3 +14,9 @@ src-tauri/gen/android/.gradle/
 src-tauri/gen/android/app/build/
 src-tauri/gen/android/build/
 src-tauri/gen/android/local.properties
+
+# Python cache
+__pycache__/
+
+# Sensitive files (signing keystore)
+shinecaniep-release.jks

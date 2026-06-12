@@ -4,18 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-资源教室管理系统-IEP (Resource Room Management System - IEP) is a Tauri v2 desktop application with a web frontend.
+送教上门AI成长智联推进系统 (Resource Room Management System - IEP) is a Tauri v2 desktop and Android tablet application with a web frontend. Developed by 杭州炫灿科技有限公司.
 
 ## Architecture
 
 ### Frontend
-- **Single Page Application**: `index.html` contains the complete UI
+- **Single Page Application**: `dist/index.html` contains the complete UI
 - **Styling**: Tailwind CSS (from `src/css/tailwind.min.css`) + Font Awesome 6 (`src/css/all.min.css`)
 - **Tauri API Module**: `src/js/tauri-api.js` provides JavaScript bindings to Rust backend commands
 
 ### Backend (Tauri/Rust)
-- **Location**: `src-tauri/src/main.rs`
-- **Version**: Tauri v2 (2.0.0-rc)
+- **Location**: `src-tauri/src/main.rs` (desktop) + `src-tauri/src/lib.rs` (shared + Android entry point)
+- **Version**: Tauri v2
 - **Plugins**: shell, dialog, fs
 - **Custom Commands**:
   - `read_config` / `write_config` - App config management
@@ -33,8 +33,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Development mode (requires Python HTTP server running)
 cd src-tauri && cargo tauri dev
 
-# Build release version
+# Build desktop release
 cd src-tauri && cargo tauri build
+
+# Build Android APK (with proxy for China network)
+export HTTP_PROXY=http://127.0.0.1:7897
+export HTTPS_PROXY=http://127.0.0.1:7897
+cd src-tauri && cargo tauri android build
 
 # On Windows, run the built executable
 .\运行Tauri应用.bat
@@ -44,20 +49,24 @@ cd src-tauri && cargo tauri build
 
 ```
 shinecaniep/
-├── index.html                 # Main SPA frontend
-├── config.json               # Runtime app configuration
-├── src/                      # Static assets
-│   ├── css/                 # Tailwind + Font Awesome
-│   ├── js/tauri-api.js      # Tauri frontend API bindings
-│   ├── webfonts/            # Font files
-│   └── icon.ico             # App icon
-├── src-tauri/               # Tauri/Rust backend
-│   ├── Cargo.toml           # Rust dependencies
-│   ├── tauri.conf.json      # Tauri configuration
-│   ├── src/main.rs          # Rust backend code
-│   ├── icons/               # App icons (multiple formats)
-│   └── target/              # Build output
-└── dist/                    # Build distribution
+├── dist/
+│   ├── index.html          # Main SPA frontend (edit here)
+│   └── config.json         # App default config
+├── src/                    # Static assets
+│   ├── css/                # Tailwind + Font Awesome
+│   ├── js/tauri-api.js     # Tauri frontend API bindings
+│   ├── webfonts/           # Font files
+│   └── icon.ico            # App icon
+├── src-tauri/              # Tauri/Rust backend
+│   ├── Cargo.toml          # Rust dependencies
+│   ├── tauri.conf.json     # Tauri configuration
+│   ├── src/main.rs         # Desktop entry
+│   ├── src/lib.rs          # Shared logic + Android entry point
+│   ├── gen/android/        # Android project (auto-generated)
+│   ├── icons/              # App icons (multiple formats)
+│   └── target/             # Build output
+├── shinecaniep-release.jks # Android signing keystore
+└── index.html              # Synced copy of dist/index.html
 ```
 
 ## Key Configuration Files
@@ -67,6 +76,7 @@ shinecaniep/
 - Dev server: `http://localhost:1420`
 - Frontend dist: `../dist`
 - Before dev command: `python -m http.server 1420 --directory ./dist`
+- Android minSdk: 24
 
 ## Tauri API Usage
 
@@ -85,6 +95,32 @@ await window.__TAURI__.core.invoke('create_shortcut', {
 ```
 
 See `src/js/tauri-api.js` for the complete API wrapper.
+
+## Android APK Build
+
+### Prerequisites
+- Android SDK + NDK 28.x
+- Rust Android targets: `aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android`
+
+### Signing
+- **Keystore**: `shinecaniep-release.jks` (project root)
+- **Alias**: `shinecaniep`
+- **Password**: `shinecaniep`
+- **Company**: 杭州炫灿科技有限公司
+
+### Viewport
+- Android uses fixed viewport `width=1280` for tablet compatibility
+- Supports pinch-to-zoom
+
+### Build Tips
+- After modifying `dist/` files, run `touch src/main.rs` to force recompile
+- The unsigned APK needs to be zipaligned and signed manually with `apksigner`
+
+## Build Notes
+
+- Changing `dist/index.html` requires syncing to root `index.html`
+- Changing dist files requires `touch src/main.rs` + rebuild (Tauri build script doesn't auto-detect dist changes)
+- `config.json` must exist in dist/ directory to be embedded
 
 ## Security Notes
 
