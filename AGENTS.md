@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-送教上门AI成长智联推进系统 (Resource Room Management System - IEP) is a Tauri v2 desktop and Android tablet application with a web frontend. Developed by 杭州炫灿科技有限公司.
+资源教室管理系统-IEP (Resource Classroom Management System - IEP) is a Tauri v2 desktop and Android tablet application with a web frontend. Developed by 杭州炫灿科技有限公司.
 
 ## Architecture
 

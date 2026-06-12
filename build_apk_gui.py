@@ -194,9 +194,11 @@ class BuildGUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("APK 打包工具")
-        self.root.geometry("720x820")
+        self.root.geometry("700x800+100+50")
         self.root.resizable(True, True)
-        self.root.minsize(600, 700)
+        self.root.minsize(500, 600)
+        self.root.attributes("-topmost", True)
+        self.root.after(100, lambda: self.root.attributes("-topmost", False))
 
         self.var_app_name = tk.StringVar()
         self.var_package = tk.StringVar()
@@ -426,8 +428,6 @@ class BuildGUI:
             self.log(f"$ {cmd}")
             try:
                 env = os.environ.copy()
-                env["HTTP_PROXY"] = "http://127.0.0.1:7897"
-                env["HTTPS_PROXY"] = "http://127.0.0.1:7897"
                 proc = subprocess.Popen(
                     cmd, shell=True, cwd=cwd, env=env,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -472,13 +472,14 @@ class BuildGUI:
             messagebox.showerror("错误", f"未找到未签名 APK:\n{unsigned}\n\n请先构建。")
             return
 
-        sdk = os.environ.get("ANDROID_HOME") or os.path.expanduser("~/AppData/Local/Android/Sdk")
+        sdk = os.environ.get("ANDROID_HOME") or os.path.expanduser("~/android-sdk")
         bt_dir = None
         bt_base = Path(sdk) / "build-tools"
         if bt_base.exists():
             versions = sorted(bt_base.iterdir(), reverse=True)
             for v in versions:
-                if (v / "apksigner.bat").exists():
+                signer = v / "apksigner" if sys.platform != "win32" else v / "apksigner.bat"
+                if signer.exists():
                     bt_dir = v
                     break
 
@@ -494,7 +495,7 @@ class BuildGUI:
             return
 
         zipalign = str(bt_dir / "zipalign")
-        apksigner = str(bt_dir / "apksigner.bat")
+        apksigner = str(bt_dir / "apksigner") if sys.platform != "win32" else str(bt_dir / "apksigner.bat")
 
         def do_sign():
             self.log("--- 签名 APK ---")

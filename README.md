@@ -1,4 +1,4 @@
-# 送教上门AI成长智联推进系统
+# 资源教室管理系统-IEP
 
 基于 Tauri v2 构建的跨平台桌面/平板应用，开发公司：杭州炫灿科技有限公司。
 
@@ -7,6 +7,8 @@
 ```
 shinecaniep/
 ├── build.js                     # 打包前置配置脚本（系统名称一键同步）
+├── build_apk_cli.py             # APK 打包命令行工具（WSL/Linux 推荐）
+├── build_apk_gui.py             # APK 打包 GUI 工具（Windows 推荐）
 ├── generate_android_icons.py    # Android APK 图标生成脚本
 ├── dist/                        # 构建输出目录（唯一源文件目录）
 │   ├── index.html              # 主应用页面（直接在此文件上开发）
@@ -175,9 +177,9 @@ Android APK 的元数据分散在多个文件中，以下为配置对照表：
 
 | 配置项 | 文件 | 字段 | 当前值 |
 |--------|------|------|--------|
-| 应用名称 | `gen/android/.../res/values/strings.xml` | `app_name` | 送教上门AI成长智联推进系统 |
-| 包名 | `gen/android/.../build.gradle.kts` | `applicationId` | com.shinecaniep.app |
-| 版本号 | `tauri.conf.json` → 自动映射 | `version` | 1.0.2 |
+| 应用名称 | `gen/android/.../res/values/strings.xml` | `app_name` | 资源教室管理系统-IEP |
+| 包名 | `gen/android/.../build.gradle.kts` | `applicationId` | com.hzxckj.shinecan.iep |
+| 版本号 | `tauri.conf.json` → 自动映射 | `version` | 1.0.3 |
 | 公司名 | `tauri.conf.json` | `copyright` | 杭州炫灿科技有限公司 |
 | 应用图标 | `gen/android/.../res/mipmap-*/` | PNG 文件 | 需手动生成 |
 
@@ -224,10 +226,6 @@ cd src-tauri && touch src/main.rs
 ##### 第四步：构建 APK
 
 ```bash
-# 如需代理（国内环境）
-export HTTP_PROXY=http://127.0.0.1:7897
-export HTTPS_PROXY=http://127.0.0.1:7897
-
 cd src-tauri && cargo tauri android build
 ```
 
@@ -300,6 +298,14 @@ apksigner verify --print-certs <signed.apk>
 MIT License
 
 ## 更新日志
+
+### 2026-06-12
+- 品牌更名至"资源教室管理系统-IEP"，包名改为 `com.hzxckj.shinecan.iep`
+- 版本升级至 1.0.3
+- 新增 `build_apk_cli.py` 命令行打包工具（WSL/Linux 下推荐使用）
+- 修复 `build_apk_gui.py` 跨平台兼容性（apksigner 路径、ANDROID_HOME 回退）
+- Android Gradle 配置阿里云镜像，无需代理即可构建
+- 更新应用图标为 ieplogo
 
 ### 2026-06-08
 - 添加 Android APK 构建支持（Tauri v2 Android）

@@ -5471,8 +5471,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "送教上门AI成长智联推进系统"
-version = "1.0.2"
+name = "资源教室管理系统-IEP"
+version = "1.0.3"
 dependencies = [
  "rfd",
  "serde",
