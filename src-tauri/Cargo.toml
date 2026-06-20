@@ -21,7 +21,7 @@ serde_json = "1"
 
 # Desktop-only: file dialog for download save-as (not available on Android/iOS)
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-rfd = "0.16"
+rfd = { version = "0.16", default-features = false, features = ["gtk3"] }
 
 [lib]
 name = "app_lib"
