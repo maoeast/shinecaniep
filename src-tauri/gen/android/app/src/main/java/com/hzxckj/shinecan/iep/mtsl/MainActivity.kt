@@ -1,4 +1,4 @@
-package com.hzxckj.shinecan.iep
+package com.hzxckj.shinecan.iep.mtsl
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

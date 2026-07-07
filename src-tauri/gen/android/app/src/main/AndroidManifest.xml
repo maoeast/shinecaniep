@@ -8,7 +8,7 @@
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.资源教室管理系统_iep"
+        android:theme="@style/Theme.MTSL"
         android:usesCleartextTraffic="${usesCleartextTraffic}">
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
