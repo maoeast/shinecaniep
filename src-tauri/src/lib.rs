@@ -674,7 +674,7 @@ pub fn run() {
             };
 
             let mut builder = WebviewWindowBuilder::new(app, "main", url)
-                .title("送教上门AI成长智联推进系统")
+                .title("特殊儿童智能学习系统")
                 .resizable(true);
 
             // 桌面端：设置窗口大小

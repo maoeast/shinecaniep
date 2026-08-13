@@ -1,7 +1,7 @@
 [package]
-name = "蒙特梭利教学应用仪"
+name = "特殊儿童智能学习系统"
 version = "1.0.3"
-description = "蒙特梭利教学应用仪"
+description = "特殊儿童智能学习系统"
 authors = ["you"]
 license = "MIT"
 repository = ""

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ShineCan IEP 打包"
+  short_description: "确认配置后打包 APK、AAB、EXE 并验证产物"
+  default_prompt: "使用 $shinecaniep-packager 确认应用信息并打包 APK 或 EXE。"
